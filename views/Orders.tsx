@@ -4,7 +4,11 @@ import { Order, OrderStatus } from '../types';
 import { ChevronRight, Search } from 'lucide-react';
 import { api } from '../services/api';
 
-export const OrdersView: React.FC = () => {
+interface OrdersProps {
+  onSelectOrder: (order: Order) => void;
+}
+
+export const OrdersView: React.FC<OrdersProps> = ({ onSelectOrder }) => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [activeTab, setActiveTab] = useState('ALL');
 
@@ -39,7 +43,11 @@ export const OrdersView: React.FC = () => {
       {/* List */}
       <div className="p-4 space-y-3 flex-1 overflow-y-auto">
         {orders.length > 0 ? orders.map((order) => (
-          <div key={order.id} className="bg-white rounded-xl p-4 shadow-sm active:scale-[0.99] transition-transform duration-100">
+          <div 
+            key={order.id} 
+            onClick={() => onSelectOrder(order)}
+            className="bg-white rounded-xl p-4 shadow-sm active:scale-[0.99] transition-transform duration-100 cursor-pointer"
+          >
             <div className="flex justify-between items-center mb-3">
               <div className="flex items-center gap-2">
                  <span className="bg-[#FEF3C7] text-[#B45309] text-[10px] px-1.5 py-0.5 rounded font-medium border border-[#FDE68A]">
@@ -86,8 +94,8 @@ export const OrdersView: React.FC = () => {
             
             {/* Action Buttons for Completed Orders */}
             <div className="mt-3 pt-2 flex justify-end gap-2">
-                <button className="px-3 py-1.5 rounded-full border border-gray-200 text-xs font-medium text-gray-600">开发票</button>
-                <button className="px-3 py-1.5 rounded-full border border-[#FDE047] bg-[#fffbe6] text-xs font-bold text-gray-800">再来一单</button>
+                <button onClick={(e) => e.stopPropagation()} className="px-3 py-1.5 rounded-full border border-gray-200 text-xs font-medium text-gray-600">开发票</button>
+                <button onClick={(e) => e.stopPropagation()} className="px-3 py-1.5 rounded-full border border-[#FDE047] bg-[#fffbe6] text-xs font-bold text-gray-800">再来一单</button>
             </div>
           </div>
         )) : (

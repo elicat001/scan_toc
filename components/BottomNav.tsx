@@ -9,8 +9,18 @@ interface BottomNavProps {
 }
 
 export const BottomNav: React.FC<BottomNavProps> = ({ currentView, onChange }) => {
-  // Don't show bottom nav on checkout
-  if (currentView === 'CHECKOUT') return null;
+  // Don't show bottom nav on checkout or sub-pages
+  const hiddenViews: ViewState[] = [
+    'CHECKOUT', 
+    'ADDRESS_LIST', 
+    'STORE_LIST', 
+    'ORDER_DETAIL',
+    'USER_PROFILE',
+    'MEMBER_TOPUP',
+    'POINTS_MALL'
+  ];
+  
+  if (hiddenViews.includes(currentView)) return null;
 
   const navItems = [
     { id: 'HOME', label: '首页', icon: Home },

@@ -2,14 +2,25 @@
 import React, { useEffect, useState } from 'react';
 import { User, QrCode, ChevronRight, CreditCard, Gift, MapPin, Headphones, ShoppingBag, FileText, UserCircle } from 'lucide-react';
 import { api } from '../services/api';
-import { User as UserType } from '../types';
+import { User as UserType, ViewState } from '../types';
 
-export const ProfileView: React.FC = () => {
+interface ProfileProps {
+  onNavigate: (view: ViewState) => void;
+}
+
+export const ProfileView: React.FC<ProfileProps> = ({ onNavigate }) => {
   const [user, setUser] = useState<UserType | null>(null);
 
   useEffect(() => {
     api.getUserProfile().then(setUser);
   }, []);
+
+  const menuItems = [
+     { icon: FileText, label: '订单中心', action: () => onNavigate('ORDERS') },
+     { icon: UserCircle, label: '个人信息', action: () => onNavigate('USER_PROFILE') },
+     { icon: Headphones, label: '客服中心', action: () => {} },
+     { icon: MapPin, label: '我的地址', action: () => onNavigate('ADDRESS_LIST') }
+  ];
 
   return (
     <div className="min-h-screen bg-[#F3F4F6] pb-24">
@@ -36,11 +47,11 @@ export const ProfileView: React.FC = () => {
 
          {/* Stats Card */}
          <div className="bg-white rounded-2xl p-6 shadow-sm grid grid-cols-3 gap-4 text-center relative z-10">
-            <div className="flex flex-col gap-1 items-center cursor-pointer active:opacity-60">
+            <div className="flex flex-col gap-1 items-center cursor-pointer active:opacity-60" onClick={() => onNavigate('POINTS_MALL')}>
                <span className="text-gray-500 font-medium text-xs mb-1">积分</span>
                <span className="text-xl font-bold text-gray-900">{user?.points || 0}</span>
             </div>
-            <div className="flex flex-col gap-1 items-center border-l border-gray-100 cursor-pointer active:opacity-60">
+            <div className="flex flex-col gap-1 items-center border-l border-gray-100 cursor-pointer active:opacity-60" onClick={() => onNavigate('MEMBER_TOPUP')}>
                <span className="text-gray-500 font-medium text-xs mb-1">余额</span>
                <span className="text-xl font-bold text-gray-900">{user?.balance.toFixed(2)}</span>
             </div>
@@ -54,13 +65,12 @@ export const ProfileView: React.FC = () => {
       {/* Menu List */}
       <div className="px-4 mt-2 space-y-4">
          <div className="bg-white rounded-xl overflow-hidden shadow-sm">
-            {[
-               { icon: FileText, label: '订单中心' },
-               { icon: UserCircle, label: '个人信息' },
-               { icon: Headphones, label: '客服中心' },
-               { icon: MapPin, label: '我的地址' }
-            ].map((item) => (
-               <div key={item.label} className="flex items-center justify-between p-4 hover:bg-gray-50 active:bg-gray-100 cursor-pointer relative group">
+            {menuItems.map((item) => (
+               <div 
+                 key={item.label} 
+                 onClick={item.action}
+                 className="flex items-center justify-between p-4 hover:bg-gray-50 active:bg-gray-100 cursor-pointer relative group"
+               >
                    {/* Divider */}
                   <div className="absolute bottom-0 left-12 right-0 h-[1px] bg-gray-50 group-last:hidden"></div>
                   
@@ -75,10 +85,14 @@ export const ProfileView: React.FC = () => {
 
          <div className="bg-white rounded-xl overflow-hidden shadow-sm">
             {[
-               { icon: CreditCard, label: '会员储值' },
-               { icon: ShoppingBag, label: '积分商城' }
+               { icon: CreditCard, label: '会员储值', action: () => onNavigate('MEMBER_TOPUP') },
+               { icon: ShoppingBag, label: '积分商城', action: () => onNavigate('POINTS_MALL') }
             ].map((item) => (
-               <div key={item.label} className="flex items-center justify-between p-4 hover:bg-gray-50 active:bg-gray-100 cursor-pointer relative group">
+               <div 
+                 key={item.label} 
+                 onClick={item.action}
+                 className="flex items-center justify-between p-4 hover:bg-gray-50 active:bg-gray-100 cursor-pointer relative group"
+               >
                    {/* Divider */}
                   <div className="absolute bottom-0 left-12 right-0 h-[1px] bg-gray-50 group-last:hidden"></div>
                   

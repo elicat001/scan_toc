@@ -11,6 +11,16 @@ export interface User {
   isVip: boolean;
 }
 
+export interface Address {
+  id: string;
+  contact: string;
+  phone: string;
+  location: string;
+  detail: string;
+  tag: string; // e.g., 'Home', 'Company'
+  isDefault: boolean;
+}
+
 export interface Store {
   id: number;
   name: string;
@@ -77,4 +87,15 @@ export interface Order {
   type: 'Dine In' | 'Pick Up' | 'Delivery';
 }
 
-export type ViewState = 'HOME' | 'MENU' | 'ORDERS' | 'PROFILE' | 'CHECKOUT';
+export type ViewState = 
+  | 'HOME' 
+  | 'MENU' 
+  | 'ORDERS' 
+  | 'PROFILE' 
+  | 'CHECKOUT' 
+  | 'ADDRESS_LIST' 
+  | 'STORE_LIST' 
+  | 'ORDER_DETAIL'
+  | 'USER_PROFILE'
+  | 'MEMBER_TOPUP'
+  | 'POINTS_MALL';

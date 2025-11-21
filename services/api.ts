@@ -1,5 +1,5 @@
 
-import { User, Product, Category, Order, Store, OrderStatus } from '../types';
+import { User, Product, Category, Order, Store, OrderStatus, Address } from '../types';
 
 // --- Mock Data ---
 
@@ -15,15 +15,56 @@ const MOCK_USER: User = {
   isVip: false,
 };
 
-const MOCK_STORE: Store = {
-  id: 1,
-  name: '棠小一',
-  address: '科技园南区R3-A栋',
-  distance: '99.4km',
-  image: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?q=80&w=1000&auto=format&fit=crop',
-  tags: ['营业中', '最近常去'],
-  status: 'OPEN'
-};
+const MOCK_ADDRESSES: Address[] = [
+  {
+    id: '1',
+    contact: '粒',
+    phone: '188****4331',
+    location: '科技园南区R3-A栋',
+    detail: '201室',
+    tag: '公司',
+    isDefault: true
+  },
+  {
+    id: '2',
+    contact: '粒',
+    phone: '188****4331',
+    location: '阳光花园小区',
+    detail: '5栋2单元1003',
+    tag: '家',
+    isDefault: false
+  }
+];
+
+const MOCK_STORES: Store[] = [
+  {
+    id: 1,
+    name: '棠小一 (科技园店)',
+    address: '科技园南区R3-A栋',
+    distance: '99.4km',
+    image: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?q=80&w=1000&auto=format&fit=crop',
+    tags: ['营业中', '最近常去'],
+    status: 'OPEN'
+  },
+  {
+    id: 2,
+    name: '棠小一 (万象天地店)',
+    address: '深南大道9668号',
+    distance: '102.1km',
+    image: 'https://images.unsplash.com/photo-1559925393-8be0ec4767c8?w=400',
+    tags: ['营业中', '人气好店'],
+    status: 'OPEN'
+  },
+  {
+    id: 3,
+    name: '棠小一 (海岸城店)',
+    address: '文心五路33号',
+    distance: '105.3km',
+    image: 'https://images.unsplash.com/photo-1445116572660-236099ec97a0?w=400',
+    tags: ['休息中'],
+    status: 'CLOSED'
+  }
+];
 
 const MOCK_CATEGORIES: Category[] = [
   { id: 1, name: '门店推荐', icon: '🔥' },
@@ -125,7 +166,17 @@ export const api = {
 
   getStoreInfo: async (): Promise<Store> => {
     await new Promise(resolve => setTimeout(resolve, 300));
-    return MOCK_STORE;
+    return MOCK_STORES[0];
+  },
+  
+  getStores: async (): Promise<Store[]> => {
+    await new Promise(resolve => setTimeout(resolve, 400));
+    return MOCK_STORES;
+  },
+
+  getAddresses: async (): Promise<Address[]> => {
+    await new Promise(resolve => setTimeout(resolve, 400));
+    return MOCK_ADDRESSES;
   },
 
   getCategories: async (): Promise<Category[]> => {

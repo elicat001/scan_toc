@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { ChevronLeft, MoreHorizontal, ChevronRight } from 'lucide-react';
+import { ChevronLeft, MoreHorizontal, ChevronRight, Check, Wallet } from 'lucide-react';
 import { CartItem } from '../types';
 
 interface CheckoutProps {
@@ -11,6 +11,7 @@ interface CheckoutProps {
 export const CheckoutView: React.FC<CheckoutProps> = ({ cart, onBack }) => {
   const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const [diningMode, setDiningMode] = useState<'dine-in' | 'pickup' | 'delivery'>('dine-in');
+  const [paymentMethod, setPaymentMethod] = useState<'wechat' | 'balance'>('wechat');
 
   return (
     <div className="min-h-screen bg-[#F3F4F6] flex flex-col font-sans">
@@ -90,7 +91,7 @@ export const CheckoutView: React.FC<CheckoutProps> = ({ cart, onBack }) => {
             </div>
 
             {/* Upsell Card */}
-            <div className="bg-white rounded-xl p-4 shadow-sm">
+            <div className="bg-white rounded-xl p-4 shadow-sm mb-3">
                 <div className="flex justify-between items-center mb-3">
                     <h4 className="font-bold text-sm text-gray-900">充值更划算</h4>
                 </div>
@@ -98,6 +99,48 @@ export const CheckoutView: React.FC<CheckoutProps> = ({ cart, onBack }) => {
                     <div className="absolute top-0 left-0 bg-[#FDE047] text-[9px] font-bold px-1.5 py-0.5 rounded-br-lg">免单</div>
                     <div className="font-bold text-lg text-gray-900 mt-1">7335元</div>
                     <div className="text-[10px] text-gray-500">充值3倍</div>
+                </div>
+            </div>
+
+            {/* Payment Methods */}
+            <div className="bg-white rounded-xl p-4 shadow-sm mb-4">
+                <h4 className="font-bold text-sm text-gray-900 mb-3">支付方式</h4>
+                
+                {/* WeChat Pay */}
+                <div 
+                  className="flex items-center justify-between py-3 border-b border-gray-50 cursor-pointer group"
+                  onClick={() => setPaymentMethod('wechat')}
+                >
+                   <div className="flex items-center gap-3">
+                      <div className="w-5 h-5 bg-[#07C160] rounded-full flex items-center justify-center flex-shrink-0">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M8.60859 15.8607C8.27854 15.8607 8.15908 15.6776 7.5047 15.3187C7.06041 16.3553 6.0486 17.085 4.87027 17.085C3.14777 17.085 1.75 15.6879 1.75 13.9647C1.75 12.2415 3.14777 10.8444 4.87027 10.8444C5.17567 10.8444 5.46996 10.889 5.74854 10.9724C5.68086 10.686 5.64453 10.3876 5.64453 10.0811C5.64453 6.96407 8.6047 4.4375 12.2567 4.4375C15.9087 4.4375 18.8689 6.96407 18.8689 10.0811C18.8689 13.1981 15.9087 15.7247 12.2567 15.7247C11.8377 15.7247 11.4312 15.6849 11.0405 15.6093C10.1296 16.1013 9.13117 16.3601 8.60859 15.8607Z" />
+                        </svg>
+                      </div>
+                      <span className="text-sm font-medium text-gray-900">微信支付</span>
+                   </div>
+                   <div className={`w-5 h-5 rounded-full flex items-center justify-center border transition-colors ${paymentMethod === 'wechat' ? 'bg-[#07C160] border-[#07C160]' : 'border-gray-300 bg-white'}`}>
+                      {paymentMethod === 'wechat' && <Check size={12} className="text-white" strokeWidth={3} />}
+                   </div>
+                </div>
+
+                {/* Balance Pay */}
+                <div 
+                   className="flex items-center justify-between py-3 cursor-pointer group"
+                   onClick={() => setPaymentMethod('balance')}
+                >
+                   <div className="flex items-center gap-3">
+                       <div className="w-5 h-5 bg-gray-300 rounded-full flex items-center justify-center text-white flex-shrink-0">
+                          <Wallet size={10} fill="currentColor" strokeWidth={0} />
+                       </div>
+                       <span className="text-sm font-medium text-gray-900">余额支付</span>
+                   </div>
+                   <div className="flex items-center gap-3">
+                      <span className="text-xs text-gray-400">余额: ¥0.00</span>
+                       <div className={`w-5 h-5 rounded-full flex items-center justify-center border transition-colors ${paymentMethod === 'balance' ? 'bg-[#07C160] border-[#07C160]' : 'border-gray-300 bg-white'}`}>
+                          {paymentMethod === 'balance' && <Check size={12} className="text-white" strokeWidth={3} />}
+                       </div>
+                   </div>
                 </div>
             </div>
           </div>

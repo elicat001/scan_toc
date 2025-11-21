@@ -92,7 +92,10 @@ export const HomeView: React.FC<HomeProps> = ({ onNavigate }) => {
               <MapPin size={18} className="stroke-2" />
               <span className="font-bold text-base">附近门店</span>
             </div>
-            <button className="text-xs text-gray-800 font-medium flex items-center hover:opacity-70">
+            <button 
+              onClick={(e) => { e.stopPropagation(); onNavigate('STORE_LIST'); }} 
+              className="text-xs text-gray-800 font-medium flex items-center hover:opacity-70"
+            >
               查看所有门店 <ChevronRight size={14} />
             </button>
           </div>
