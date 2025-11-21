@@ -6,9 +6,10 @@ import { Order, OrderStatus } from '../types';
 interface OrderDetailProps {
   order: Order;
   onBack: () => void;
+  onOrderAgain?: () => void;
 }
 
-export const OrderDetailView: React.FC<OrderDetailProps> = ({ order, onBack }) => {
+export const OrderDetailView: React.FC<OrderDetailProps> = ({ order, onBack, onOrderAgain }) => {
   return (
     <div className="min-h-screen bg-[#F3F4F6] flex flex-col">
       {/* Header */}
@@ -26,7 +27,7 @@ export const OrderDetailView: React.FC<OrderDetailProps> = ({ order, onBack }) =
              
              <div className="mt-6 flex gap-3">
                 <button className="flex-1 bg-white border border-gray-200 py-2 rounded-lg font-bold text-sm text-gray-700 shadow-sm">联系门店</button>
-                <button className="flex-1 bg-[#FDE047] py-2 rounded-lg font-bold text-sm text-gray-900 shadow-sm">再来一单</button>
+                <button onClick={onOrderAgain} className="flex-1 bg-[#FDE047] py-2 rounded-lg font-bold text-sm text-gray-900 shadow-sm">再来一单</button>
              </div>
          </div>
 

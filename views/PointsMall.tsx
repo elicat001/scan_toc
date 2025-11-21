@@ -1,9 +1,10 @@
 
 import React, { useState } from 'react';
-import { ChevronLeft, Ticket, Coffee, ShoppingBag } from 'lucide-react';
+import { ChevronLeft, Ticket, Coffee, ShoppingBag, ChevronRight } from 'lucide-react';
 
 interface PointsMallProps {
   onBack: () => void;
+  onHistory: () => void;
 }
 
 const MOCK_ITEMS = [
@@ -15,7 +16,7 @@ const MOCK_ITEMS = [
     { id: 6, name: '甜品买一送一券', points: 600, image: 'https://images.unsplash.com/photo-1563729768640-d0910022eb09?w=200', type: 'COUPON' },
 ];
 
-export const PointsMallView: React.FC<PointsMallProps> = ({ onBack }) => {
+export const PointsMallView: React.FC<PointsMallProps> = ({ onBack, onHistory }) => {
   const [activeTab, setActiveTab] = useState('ALL');
 
   const filteredItems = activeTab === 'ALL' ? MOCK_ITEMS : MOCK_ITEMS.filter(i => {
@@ -31,15 +32,20 @@ export const PointsMallView: React.FC<PointsMallProps> = ({ onBack }) => {
          <div className="flex items-center justify-between mb-6">
             <button onClick={onBack} className="p-1 -ml-1 rounded-full hover:bg-black/10"><ChevronLeft size={24} className="text-gray-900" /></button>
             <span className="font-bold text-lg text-gray-900">积分商城</span>
-            <div className="text-sm font-medium text-gray-800">兑换记录</div>
+            <button onClick={onHistory} className="text-sm font-medium text-gray-800 flex items-center">
+                兑换记录
+            </button>
          </div>
          
-         <div className="flex items-center justify-between px-2">
+         <div className="flex items-center justify-between px-2 cursor-pointer active:opacity-70 transition-opacity" onClick={onHistory}>
              <div className="flex flex-col">
-                 <span className="text-xs font-medium text-gray-700 mb-1">我的积分</span>
+                 <div className="flex items-center gap-1">
+                    <span className="text-xs font-medium text-gray-700 mb-1">我的积分</span>
+                    <ChevronRight size={14} className="text-gray-700 mb-1" />
+                 </div>
                  <span className="text-4xl font-bold text-gray-900">19</span>
              </div>
-             <button className="bg-white/50 backdrop-blur-sm px-3 py-1.5 rounded-full text-xs font-bold text-gray-800 border border-white/20">如何获取积分?</button>
+             <button className="bg-white/50 backdrop-blur-sm px-3 py-1.5 rounded-full text-xs font-bold text-gray-800 border border-white/20" onClick={(e) => {e.stopPropagation()}}>如何获取积分?</button>
          </div>
       </div>
 

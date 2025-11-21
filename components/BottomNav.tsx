@@ -17,7 +17,8 @@ export const BottomNav: React.FC<BottomNavProps> = ({ currentView, onChange }) =
     'ORDER_DETAIL',
     'USER_PROFILE',
     'MEMBER_TOPUP',
-    'POINTS_MALL'
+    'POINTS_MALL',
+    'POINTS_HISTORY'
   ];
   
   if (hiddenViews.includes(currentView)) return null;

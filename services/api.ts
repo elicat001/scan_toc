@@ -1,5 +1,5 @@
 
-import { User, Product, Category, Order, Store, OrderStatus, Address, Banner, ApiResponse } from '../types';
+import { User, Product, Category, Order, Store, OrderStatus, Address, Banner, ApiResponse, PointRecord } from '../types';
 
 // --- Configuration ---
 const API_BASE_URL = 'https://api.your-saas-backend.com/api/v1'; // Replace with actual backend URL
@@ -217,6 +217,14 @@ const MOCK_ORDERS: Order[] = [
   }
 ];
 
+const MOCK_POINT_RECORDS: PointRecord[] = [
+    { id: 1, title: '消费奖励 - 订单3662', amount: 54, createTime: '2025-09-04 19:31', type: 'EARN' },
+    { id: 2, title: '消费奖励 - 订单6062', amount: 19, createTime: '2025-08-21 15:16', type: 'EARN' },
+    { id: 3, title: '兑换优惠券', amount: -500, createTime: '2025-08-20 10:00', type: 'SPEND' },
+    { id: 4, title: '消费奖励 - 订单1639', amount: 10, createTime: '2025-08-04 14:22', type: 'EARN' },
+    { id: 5, title: '完善生日信息奖励', amount: 100, createTime: '2025-07-01 12:00', type: 'EARN' },
+];
+
 // --- API Service Implementation ---
 
 export const api = {
@@ -314,6 +322,16 @@ export const api = {
       return { success: true, orderId: Math.random().toString().slice(2, 8) };
     }
   },
+  
+  payOrder: async (orderId: string): Promise<boolean> => {
+     try {
+        await request(`/order/${orderId}/pay`, { method: 'POST' });
+        return true;
+     } catch (e) {
+        await new Promise(r => setTimeout(r, 1500));
+        return true;
+     }
+  },
 
   // Address
   getAddresses: async (): Promise<Address[]> => {
@@ -342,5 +360,15 @@ export const api = {
       await new Promise(r => setTimeout(r, 200));
       return MOCK_BANNERS;
     }
+  },
+  
+  // Points
+  getPointsHistory: async (): Promise<PointRecord[]> => {
+      try {
+          return await request<PointRecord[]>('/user/points/history');
+      } catch (e) {
+          await new Promise(r => setTimeout(r, 300));
+          return MOCK_POINT_RECORDS;
+      }
   }
 };

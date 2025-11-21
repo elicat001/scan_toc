@@ -12,6 +12,7 @@ import { OrderDetailView } from './views/OrderDetail';
 import { UserProfileView } from './views/UserProfile';
 import { MemberTopUpView } from './views/MemberTopUp';
 import { PointsMallView } from './views/PointsMall';
+import { PointsHistoryView } from './views/PointsHistory';
 import { ViewState, CartItem, Product, Order } from './types';
 
 const App: React.FC = () => {
@@ -45,6 +46,26 @@ const App: React.FC = () => {
     setCurrentView('ORDER_DETAIL');
   };
 
+  // Re-order logic: Convert OrderItems to CartItems and go to checkout
+  const handleOrderAgain = (order: Order) => {
+      const newCartItems: CartItem[] = order.items.map(item => {
+          // Note: In a real app, we might need to fetch the latest product details 
+          // to ensure price/availability. Here we map roughly.
+          // We also might parse the 'specSnapshot' string back into an object if needed.
+          return {
+              id: item.productId,
+              categoryId: 0, // Unknown from OrderItem, but not critical for cart display usually
+              name: item.name,
+              price: item.price,
+              image: item.image,
+              quantity: item.count,
+              selectedSpec: undefined // Spec handling would go here
+          };
+      });
+      setCart(newCartItems);
+      setCurrentView('CHECKOUT');
+  };
+
   const renderView = () => {
     switch (currentView) {
       case 'HOME':
@@ -59,7 +80,7 @@ const App: React.FC = () => {
           />
         );
       case 'ORDERS':
-        return <OrdersView onSelectOrder={handleOrderSelect} />;
+        return <OrdersView onSelectOrder={handleOrderSelect} onOrderAgain={handleOrderAgain} />;
       case 'PROFILE':
         return <ProfileView onNavigate={setCurrentView} />;
       case 'CHECKOUT':
@@ -69,14 +90,16 @@ const App: React.FC = () => {
       case 'STORE_LIST':
         return <StoreListView onBack={() => setCurrentView('HOME')} onSelect={(store) => setCurrentView('MENU')} />;
       case 'ORDER_DETAIL':
-        if (!selectedOrder) return <OrdersView onSelectOrder={handleOrderSelect} />;
-        return <OrderDetailView order={selectedOrder} onBack={() => setCurrentView('ORDERS')} />;
+        if (!selectedOrder) return <OrdersView onSelectOrder={handleOrderSelect} onOrderAgain={handleOrderAgain} />;
+        return <OrderDetailView order={selectedOrder} onBack={() => setCurrentView('ORDERS')} onOrderAgain={() => handleOrderAgain(selectedOrder)} />;
       case 'USER_PROFILE':
         return <UserProfileView onBack={() => setCurrentView('PROFILE')} />;
       case 'MEMBER_TOPUP':
         return <MemberTopUpView onBack={() => setCurrentView('PROFILE')} />;
       case 'POINTS_MALL':
-        return <PointsMallView onBack={() => setCurrentView('PROFILE')} />;
+        return <PointsMallView onBack={() => setCurrentView('PROFILE')} onHistory={() => setCurrentView('POINTS_HISTORY')} />;
+      case 'POINTS_HISTORY':
+        return <PointsHistoryView onBack={() => setCurrentView('POINTS_MALL')} />;
       default:
         return <HomeView onNavigate={setCurrentView} />;
     }

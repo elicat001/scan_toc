@@ -6,9 +6,10 @@ import { api } from '../services/api';
 
 interface OrdersProps {
   onSelectOrder: (order: Order) => void;
+  onOrderAgain?: (order: Order) => void;
 }
 
-export const OrdersView: React.FC<OrdersProps> = ({ onSelectOrder }) => {
+export const OrdersView: React.FC<OrdersProps> = ({ onSelectOrder, onOrderAgain }) => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [activeTab, setActiveTab] = useState('ALL');
 
@@ -95,7 +96,15 @@ export const OrdersView: React.FC<OrdersProps> = ({ onSelectOrder }) => {
             {/* Action Buttons for Completed Orders */}
             <div className="mt-3 pt-2 flex justify-end gap-2">
                 <button onClick={(e) => e.stopPropagation()} className="px-3 py-1.5 rounded-full border border-gray-200 text-xs font-medium text-gray-600">开发票</button>
-                <button onClick={(e) => e.stopPropagation()} className="px-3 py-1.5 rounded-full border border-[#FDE047] bg-[#fffbe6] text-xs font-bold text-gray-800">再来一单</button>
+                <button 
+                  onClick={(e) => { 
+                    e.stopPropagation(); 
+                    if (onOrderAgain) onOrderAgain(order); 
+                  }} 
+                  className="px-3 py-1.5 rounded-full border border-[#FDE047] bg-[#fffbe6] text-xs font-bold text-gray-800"
+                >
+                  再来一单
+                </button>
             </div>
           </div>
         )) : (

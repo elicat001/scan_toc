@@ -131,6 +131,14 @@ export interface Coupon {
   expireDate: string;
 }
 
+export interface PointRecord {
+  id: number;
+  title: string;
+  amount: number; // Positive for earn, negative for spend
+  createTime: string;
+  type: 'EARN' | 'SPEND';
+}
+
 // View States for Routing
 export type ViewState = 
   | 'HOME' 
@@ -143,4 +151,5 @@ export type ViewState =
   | 'ORDER_DETAIL'
   | 'USER_PROFILE'
   | 'MEMBER_TOPUP'
-  | 'POINTS_MALL';
+  | 'POINTS_MALL'
+  | 'POINTS_HISTORY';
