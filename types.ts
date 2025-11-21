@@ -69,6 +69,7 @@ export interface Product {
   sales?: number;
   stock?: number;
   status?: number; // 1: on_sale, 0: off_shelf
+  isFavorite?: boolean;
 }
 
 export interface Category {
@@ -139,6 +140,16 @@ export interface PointRecord {
   type: 'EARN' | 'SPEND';
 }
 
+export interface PointsReward {
+    id: number;
+    name: string;
+    points: number;
+    image: string;
+    type: 'COUPON' | 'DRINK' | 'GIFT';
+    description?: string;
+    rules?: string[];
+}
+
 // View States for Routing
 export type ViewState = 
   | 'HOME' 
@@ -152,4 +163,8 @@ export type ViewState =
   | 'USER_PROFILE'
   | 'MEMBER_TOPUP'
   | 'POINTS_MALL'
-  | 'POINTS_HISTORY';
+  | 'POINTS_HISTORY'
+  | 'POINTS_ITEM_DETAIL'
+  | 'RESERVATION'
+  | 'STORE_DETAIL'
+  | 'MEMBER_CODE';

@@ -6,11 +6,12 @@ import { CartItem } from '../types';
 interface CheckoutProps {
   cart: CartItem[];
   onBack: () => void;
+  initialDiningMode?: 'dine-in' | 'pickup' | 'delivery';
 }
 
-export const CheckoutView: React.FC<CheckoutProps> = ({ cart, onBack }) => {
+export const CheckoutView: React.FC<CheckoutProps> = ({ cart, onBack, initialDiningMode = 'dine-in' }) => {
   const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const [diningMode, setDiningMode] = useState<'dine-in' | 'pickup' | 'delivery'>('dine-in');
+  const [diningMode, setDiningMode] = useState<'dine-in' | 'pickup' | 'delivery'>(initialDiningMode);
   const [paymentMethod, setPaymentMethod] = useState<'wechat' | 'balance'>('wechat');
 
   return (
@@ -29,8 +30,8 @@ export const CheckoutView: React.FC<CheckoutProps> = ({ cart, onBack }) => {
           <div className="px-4 pt-4">
             <div className="bg-white p-1.5 rounded-full flex mb-4 shadow-sm">
                 <button onClick={() => setDiningMode('dine-in')} className={`flex-1 py-2 rounded-full font-bold text-sm transition-all ${diningMode === 'dine-in' ? 'bg-[#FDE047] text-gray-900 shadow-sm' : 'text-gray-500'}`}>堂食</button>
-                <button onClick={() => setDiningMode('pickup')} className={`flex-1 py-2 rounded-full font-bold text-sm transition-all ${diningMode === 'pickup' ? 'bg-[#FDE047] text-gray-900 shadow-sm' : 'text-gray-500'}`}>配送</button>
-                <button onClick={() => setDiningMode('delivery')} className={`flex-1 py-2 rounded-full font-bold text-sm transition-all ${diningMode === 'delivery' ? 'bg-[#FDE047] text-gray-900 shadow-sm' : 'text-gray-500'}`}>快递</button>
+                <button onClick={() => setDiningMode('pickup')} className={`flex-1 py-2 rounded-full font-bold text-sm transition-all ${diningMode === 'pickup' ? 'bg-[#FDE047] text-gray-900 shadow-sm' : 'text-gray-500'}`}>自取</button>
+                <button onClick={() => setDiningMode('delivery')} className={`flex-1 py-2 rounded-full font-bold text-sm transition-all ${diningMode === 'delivery' ? 'bg-[#FDE047] text-gray-900 shadow-sm' : 'text-gray-500'}`}>外送</button>
             </div>
 
             {/* Store Info */}
@@ -159,3 +160,4 @@ export const CheckoutView: React.FC<CheckoutProps> = ({ cart, onBack }) => {
     </div>
   );
 };
+    

@@ -13,12 +13,18 @@ import { UserProfileView } from './views/UserProfile';
 import { MemberTopUpView } from './views/MemberTopUp';
 import { PointsMallView } from './views/PointsMall';
 import { PointsHistoryView } from './views/PointsHistory';
-import { ViewState, CartItem, Product, Order } from './types';
+import { PointsItemDetailView } from './views/PointsItemDetail';
+import { ReservationView } from './views/Reservation';
+import { StoreDetailView } from './views/StoreDetail';
+import { MemberCodeView } from './views/MemberCode';
+import { ViewState, CartItem, Product, Order, PointsReward } from './types';
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<ViewState>('HOME');
   const [cart, setCart] = useState<CartItem[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [selectedReward, setSelectedReward] = useState<PointsReward | null>(null);
+  const [initialDiningMode, setInitialDiningMode] = useState<'dine-in' | 'pickup' | 'delivery'>('dine-in');
 
   const handleAddToCart = (product: Product, quantity: number, selectedSpec?: Record<string, string>) => {
     setCart(prev => {
@@ -49,27 +55,39 @@ const App: React.FC = () => {
   // Re-order logic: Convert OrderItems to CartItems and go to checkout
   const handleOrderAgain = (order: Order) => {
       const newCartItems: CartItem[] = order.items.map(item => {
-          // Note: In a real app, we might need to fetch the latest product details 
-          // to ensure price/availability. Here we map roughly.
-          // We also might parse the 'specSnapshot' string back into an object if needed.
           return {
               id: item.productId,
-              categoryId: 0, // Unknown from OrderItem, but not critical for cart display usually
+              categoryId: 0, 
               name: item.name,
               price: item.price,
               image: item.image,
               quantity: item.count,
-              selectedSpec: undefined // Spec handling would go here
+              selectedSpec: undefined 
           };
       });
       setCart(newCartItems);
+
+      // Set dining mode based on order type
+      let mode: 'dine-in' | 'pickup' | 'delivery' = 'dine-in';
+      if (order.type === 'Pick Up') mode = 'pickup';
+      if (order.type === 'Delivery') mode = 'delivery';
+      setInitialDiningMode(mode);
+
       setCurrentView('CHECKOUT');
+  };
+  
+  const handleNavigateFromHome = (view: ViewState) => {
+      // Default to dine-in if coming from generic entry, typically Menu handles its own defaults
+      // but if we clicked specific buttons in Home, we might want to pass state. 
+      // For now simple nav.
+      setInitialDiningMode('dine-in');
+      setCurrentView(view);
   };
 
   const renderView = () => {
     switch (currentView) {
       case 'HOME':
-        return <HomeView onNavigate={setCurrentView} />;
+        return <HomeView onNavigate={handleNavigateFromHome} />;
       case 'MENU':
         return (
           <MenuView 
@@ -77,6 +95,7 @@ const App: React.FC = () => {
             onAddToCart={handleAddToCart} 
             onRemoveFromCart={handleRemoveFromCart}
             onCheckout={() => setCurrentView('CHECKOUT')}
+            initialDiningMode={initialDiningMode}
           />
         );
       case 'ORDERS':
@@ -84,7 +103,7 @@ const App: React.FC = () => {
       case 'PROFILE':
         return <ProfileView onNavigate={setCurrentView} />;
       case 'CHECKOUT':
-        return <CheckoutView cart={cart} onBack={() => setCurrentView('MENU')} />;
+        return <CheckoutView cart={cart} onBack={() => setCurrentView('MENU')} initialDiningMode={initialDiningMode} />;
       case 'ADDRESS_LIST':
         return <AddressListView onBack={() => setCurrentView('PROFILE')} />;
       case 'STORE_LIST':
@@ -97,9 +116,18 @@ const App: React.FC = () => {
       case 'MEMBER_TOPUP':
         return <MemberTopUpView onBack={() => setCurrentView('PROFILE')} />;
       case 'POINTS_MALL':
-        return <PointsMallView onBack={() => setCurrentView('PROFILE')} onHistory={() => setCurrentView('POINTS_HISTORY')} />;
+        return <PointsMallView onBack={() => setCurrentView('PROFILE')} onHistory={() => setCurrentView('POINTS_HISTORY')} onSelectReward={(r) => { setSelectedReward(r); setCurrentView('POINTS_ITEM_DETAIL'); }} />;
       case 'POINTS_HISTORY':
         return <PointsHistoryView onBack={() => setCurrentView('POINTS_MALL')} />;
+      case 'POINTS_ITEM_DETAIL':
+        if (!selectedReward) return <PointsMallView onBack={() => setCurrentView('PROFILE')} onHistory={() => setCurrentView('POINTS_HISTORY')} onSelectReward={() => {}} />;
+        return <PointsItemDetailView reward={selectedReward} onBack={() => setCurrentView('POINTS_MALL')} />;
+      case 'RESERVATION':
+        return <ReservationView onBack={() => setCurrentView('HOME')} />;
+      case 'STORE_DETAIL':
+        return <StoreDetailView onBack={() => setCurrentView('HOME')} />;
+      case 'MEMBER_CODE':
+        return <MemberCodeView onBack={() => setCurrentView('HOME')} onTopUp={() => setCurrentView('MEMBER_TOPUP')} />;
       default:
         return <HomeView onNavigate={setCurrentView} />;
     }

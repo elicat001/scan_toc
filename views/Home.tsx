@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
-import { MapPin, ChevronRight, Store, ShoppingBag, Truck, Calendar } from 'lucide-react';
-import { ViewState, User, Store as StoreType } from '../types';
+import { MapPin, ChevronRight, Store, ShoppingBag, Truck, Calendar, Navigation, Phone } from 'lucide-react';
+import { ViewState, User, Store as StoreType, Banner, Product } from '../types';
 import { api } from '../services/api';
 
 interface HomeProps {
@@ -11,10 +11,14 @@ interface HomeProps {
 export const HomeView: React.FC<HomeProps> = ({ onNavigate }) => {
   const [user, setUser] = useState<User | null>(null);
   const [store, setStore] = useState<StoreType | null>(null);
+  const [banners, setBanners] = useState<Banner[]>([]);
+  const [recommendProducts, setRecommendProducts] = useState<Product[]>([]);
 
   useEffect(() => {
     api.getUserProfile().then(setUser);
     api.getStoreInfo().then(setStore);
+    api.getBanners().then(setBanners);
+    api.getRecommendProducts().then(setRecommendProducts);
   }, []);
 
   return (
@@ -22,12 +26,15 @@ export const HomeView: React.FC<HomeProps> = ({ onNavigate }) => {
       {/* Header Area */}
       <div className="bg-white p-4 pb-6 rounded-b-[2rem] shadow-sm">
         {/* Top Bar */}
-        <div className="flex justify-between items-start mb-8 pt-2">
+        <div className="flex justify-between items-start mb-6 pt-2">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 mb-1">{user ? user.name : '加载中...'}</h1>
             <p className="text-xs text-gray-400">暂未开通此VIP特权</p>
           </div>
-          <div className="flex items-center gap-1 bg-yellow-100/80 px-3 py-1.5 rounded-full border border-yellow-200 cursor-pointer">
+          <div 
+            onClick={() => onNavigate('MEMBER_CODE')}
+            className="flex items-center gap-1 bg-yellow-100/80 px-3 py-1.5 rounded-full border border-yellow-200 cursor-pointer active:scale-95 transition-transform"
+          >
             <div className="grid grid-cols-2 gap-0.5 w-3 h-3">
                <div className="bg-yellow-600 rounded-[1px]"></div>
                <div className="bg-yellow-600/50 rounded-[1px]"></div>
@@ -38,109 +45,154 @@ export const HomeView: React.FC<HomeProps> = ({ onNavigate }) => {
           </div>
         </div>
 
-        {/* Main Actions Grid */}
-        <div className="grid grid-cols-2 gap-y-8 gap-x-12 px-6 mb-4">
-          <button onClick={() => onNavigate('MENU')} className="flex flex-col items-center justify-center gap-2 group">
-            <div className="relative">
-                <Store size={40} className="text-gray-800 stroke-1" />
-                <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full hidden"></div>
-            </div>
-            <div className="text-center">
-              <span className="block font-bold text-lg text-gray-900 tracking-wide">堂食</span>
-              <span className="block text-[10px] text-gray-400 uppercase font-medium">Dine In</span>
-            </div>
-          </button>
-
-          <button onClick={() => onNavigate('MENU')} className="flex flex-col items-center justify-center gap-2 border-l border-dashed border-gray-200 pl-6">
-             <UserIcon size={40} />
-            <div className="text-center">
-              <span className="block font-bold text-lg text-gray-900 tracking-wide">自取</span>
-              <span className="block text-[10px] text-gray-400 uppercase font-medium">Pick Up</span>
-            </div>
-          </button>
-
-          <button className="flex flex-col items-center justify-center gap-2">
-             <div className="relative">
-                 <Truck size={40} className="text-gray-800 stroke-1" />
+        {/* Banner Carousel (Simplified) */}
+        {banners.length > 0 && (
+          <div className="mb-6 rounded-xl overflow-hidden shadow-sm relative h-32">
+             <img src={banners[0].imageUrl} className="w-full h-full object-cover" alt={banners[0].title} />
+             <div className="absolute bottom-2 right-2 bg-black/30 text-white text-[9px] px-1.5 py-0.5 rounded-full backdrop-blur-sm">
+                1/{banners.length}
              </div>
-            <div className="text-center">
-              <span className="block font-bold text-lg text-gray-900 tracking-wide">外送</span>
-              <span className="block text-[10px] text-gray-400 uppercase font-medium">Delivery</span>
+          </div>
+        )}
+
+        {/* Main Actions Grid */}
+        <div className="grid grid-cols-2 gap-4 px-2 mb-2">
+          <button 
+             onClick={() => onNavigate('MENU')} 
+             className="bg-[#FEFCE8] hover:bg-[#FEF9C3] transition-colors p-4 rounded-2xl flex items-center gap-3 shadow-sm border border-[#FEF08A]"
+          >
+            <div className="bg-[#FDE047] p-2.5 rounded-full text-gray-900">
+                <Store size={24} strokeWidth={2.5} />
+            </div>
+            <div className="text-left">
+              <span className="block font-bold text-lg text-gray-900">堂食</span>
+              <span className="block text-[10px] text-yellow-700 font-medium">Dine In</span>
             </div>
           </button>
 
-          <button className="flex flex-col items-center justify-center gap-2 border-l border-dashed border-gray-200 pl-6">
-             <Calendar size={40} className="text-gray-800 stroke-1" />
-            <div className="text-center">
-              <span className="block font-bold text-lg text-gray-900 tracking-wide">自助预约</span>
-              <span className="block text-[10px] text-gray-400 uppercase font-medium">Reservation</span>
+          <button 
+             onClick={() => onNavigate('MENU')} 
+             className="bg-white hover:bg-gray-50 transition-colors p-4 rounded-2xl flex items-center gap-3 shadow-sm border border-gray-100"
+          >
+             <div className="bg-gray-100 p-2.5 rounded-full text-gray-900">
+                 <ShoppingBag size={24} strokeWidth={2.5} />
+             </div>
+            <div className="text-left">
+              <span className="block font-bold text-lg text-gray-900">自取</span>
+              <span className="block text-[10px] text-gray-400 font-medium">Pick Up</span>
+            </div>
+          </button>
+
+          <button 
+             onClick={() => onNavigate('MENU')}
+             className="bg-white hover:bg-gray-50 transition-colors p-4 rounded-2xl flex items-center gap-3 shadow-sm border border-gray-100"
+          >
+             <div className="bg-gray-100 p-2.5 rounded-full text-gray-900">
+                 <Truck size={24} strokeWidth={2.5} />
+             </div>
+            <div className="text-left">
+              <span className="block font-bold text-lg text-gray-900">外送</span>
+              <span className="block text-[10px] text-gray-400 font-medium">Delivery</span>
+            </div>
+          </button>
+
+          <button 
+            onClick={() => onNavigate('RESERVATION')}
+            className="bg-white hover:bg-gray-50 transition-colors p-4 rounded-2xl flex items-center gap-3 shadow-sm border border-gray-100"
+          >
+             <div className="bg-gray-100 p-2.5 rounded-full text-gray-900">
+                 <Calendar size={24} strokeWidth={2.5} />
+             </div>
+            <div className="text-left">
+              <span className="block font-bold text-lg text-gray-900">自助预约</span>
+              <span className="block text-[10px] text-gray-400 font-medium">Reservation</span>
             </div>
           </button>
         </div>
-      </div>
-
-      {/* Grey Bar - Unmet Conditions */}
-      <div className="mx-4 mt-5 bg-gray-200/80 rounded-full py-3 text-center text-gray-500 font-bold text-sm shadow-inner">
-        未满足开通条件
       </div>
 
       {/* Store Card */}
       {store && (
-        <div className="mx-4 mt-5 bg-[#FDE047] rounded-2xl overflow-hidden shadow-sm relative group cursor-pointer" onClick={() => onNavigate('MENU')}>
-          <div className="p-4 flex justify-between items-start z-10 relative">
-            <div className="flex items-center gap-1.5 text-gray-900">
-              <MapPin size={18} className="stroke-2" />
-              <span className="font-bold text-base">附近门店</span>
-            </div>
-            <button 
-              onClick={(e) => { e.stopPropagation(); onNavigate('STORE_LIST'); }} 
-              className="text-xs text-gray-800 font-medium flex items-center hover:opacity-70"
-            >
-              查看所有门店 <ChevronRight size={14} />
-            </button>
-          </div>
-          
-          <div className="h-32 w-full flex items-center justify-center relative overflow-hidden">
-              {/* Sketchy Illustration Overlay */}
-              <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/sketch-header.png')]"></div>
-               <img 
-                  src="https://ouch-cdn2.icons8.com/f1W0-N1X5-0.png" 
-                  alt="Shop Illustration" 
-                  className="h-full object-contain opacity-80 mix-blend-multiply scale-110 translate-y-2"
-               />
+        <div className="mx-4 mt-5 bg-white rounded-2xl overflow-hidden shadow-sm relative group cursor-pointer border border-gray-100" onClick={() => onNavigate('STORE_DETAIL')}>
+          {/* Map Background Placeholder */}
+          <div className="h-24 bg-gray-100 relative overflow-hidden">
+             <div className="absolute inset-0 opacity-30 bg-[url('https://www.transparenttextures.com/patterns/city-map.png')] grayscale"></div>
+             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
+                <MapPin className="text-gray-800 drop-shadow-md" size={28} fill="#FDE047" />
+                <div className="w-2 h-1 bg-black/20 rounded-full blur-[1px]"></div>
+             </div>
+             
+             {/* Status Badge */}
+             <div className="absolute top-3 right-3 bg-white/90 backdrop-blur text-green-600 text-[10px] font-bold px-2 py-1 rounded-md shadow-sm border border-green-100 flex items-center gap-1">
+                <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
+                {store.status === 'OPEN' ? '营业中' : '休息中'}
+             </div>
           </div>
 
-          <div className="bg-white p-5 flex justify-between items-center">
-             <div>
-               <h3 className="font-bold text-xl text-gray-900 mb-1">{store.name}</h3>
-               <p className="text-xs text-gray-500">授权地理位置即可选择门店</p>
+          <div className="p-4">
+             <div className="flex justify-between items-start mb-3">
+               <div>
+                 <h3 className="font-bold text-lg text-gray-900">{store.name}</h3>
+                 <div className="flex items-center gap-2 mt-1">
+                     <span className="text-xs text-gray-500 flex items-center gap-0.5">
+                        <MapPin size={12} /> {store.distance}
+                     </span>
+                     <div className="w-[1px] h-2.5 bg-gray-200"></div>
+                     <span className="text-xs text-gray-500">{store.address}</span>
+                 </div>
+               </div>
              </div>
-             <button onClick={(e) => { e.stopPropagation(); onNavigate('MENU'); }} className="bg-[#FDE047] text-gray-900 px-5 py-2 rounded-full text-sm font-bold shadow-sm hover:bg-yellow-400 transition-colors">
-               查看详情
-             </button>
+             
+             <div className="flex gap-2 border-t border-gray-50 pt-3">
+                <button 
+                   onClick={(e) => { e.stopPropagation(); /* Call Logic */ }}
+                   className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-gray-50 text-xs font-bold text-gray-700 hover:bg-gray-100"
+                >
+                   <Phone size={14} /> 联系门店
+                </button>
+                <button 
+                   onClick={(e) => { e.stopPropagation(); /* Nav Logic */ }}
+                   className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-gray-50 text-xs font-bold text-gray-700 hover:bg-gray-100"
+                >
+                   <Navigation size={14} /> 导航前往
+                </button>
+                <button 
+                   onClick={(e) => { e.stopPropagation(); onNavigate('MENU'); }} 
+                   className="flex-[1.5] bg-[#FDE047] text-gray-900 py-2 rounded-lg text-xs font-bold shadow-sm hover:bg-yellow-400 transition-colors flex items-center justify-center gap-1"
+                >
+                   去点单 <ChevronRight size={14} />
+                </button>
+             </div>
           </div>
         </div>
       )}
+
+      {/* Recommendation Feed */}
+      <div className="mt-6 px-4">
+         <div className="flex items-center justify-between mb-3">
+             <h3 className="font-bold text-lg text-gray-900">今日推荐</h3>
+             <span className="text-xs text-gray-400">查看更多</span>
+         </div>
+         
+         <div className="flex gap-4 overflow-x-auto no-scrollbar pb-4">
+             {recommendProducts.map(product => (
+                 <div key={product.id} className="min-w-[140px] w-[140px] bg-white rounded-xl p-2 shadow-sm flex flex-col" onClick={() => onNavigate('MENU')}>
+                     <div className="w-full aspect-square rounded-lg bg-gray-100 mb-2 overflow-hidden">
+                         <img src={product.image} className="w-full h-full object-cover" alt={product.name} />
+                     </div>
+                     <div className="font-bold text-gray-900 text-xs line-clamp-1 mb-1">{product.name}</div>
+                     <div className="flex justify-between items-center mt-auto">
+                         <span className="text-sm font-bold text-gray-900">¥{product.price}</span>
+                         <button className="w-5 h-5 bg-[#FDE047] rounded-full flex items-center justify-center text-gray-900">
+                             <ShoppingBag size={10} />
+                         </button>
+                     </div>
+                 </div>
+             ))}
+         </div>
+      </div>
       
       <div className="h-8"></div>
     </div>
   );
 };
-
-// Helper Icon
-const UserIcon = ({ size }: { size: number }) => (
-  <svg 
-    width={size} 
-    height={size} 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
-    strokeWidth="1" 
-    strokeLinecap="round" 
-    strokeLinejoin="round" 
-    className="text-gray-800"
-  >
-    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-    <circle cx="12" cy="7" r="4"></circle>
-  </svg>
-);

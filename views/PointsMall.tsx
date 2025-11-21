@@ -1,13 +1,15 @@
 
 import React, { useState } from 'react';
 import { ChevronLeft, Ticket, Coffee, ShoppingBag, ChevronRight } from 'lucide-react';
+import { PointsReward } from '../types';
 
 interface PointsMallProps {
   onBack: () => void;
   onHistory: () => void;
+  onSelectReward?: (reward: PointsReward) => void;
 }
 
-const MOCK_ITEMS = [
+const MOCK_ITEMS: PointsReward[] = [
     { id: 1, name: '5元无门槛优惠券', points: 500, image: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=200', type: 'COUPON' },
     { id: 2, name: '免费拿铁兑换券', points: 800, image: 'https://images.unsplash.com/photo-1541167760496-1628856ab772?w=200', type: 'DRINK' },
     { id: 3, name: '棠小一限定帆布袋', points: 2000, image: 'https://images.unsplash.com/photo-1544816155-12df9643f363?w=200', type: 'GIFT' },
@@ -16,7 +18,7 @@ const MOCK_ITEMS = [
     { id: 6, name: '甜品买一送一券', points: 600, image: 'https://images.unsplash.com/photo-1563729768640-d0910022eb09?w=200', type: 'COUPON' },
 ];
 
-export const PointsMallView: React.FC<PointsMallProps> = ({ onBack, onHistory }) => {
+export const PointsMallView: React.FC<PointsMallProps> = ({ onBack, onHistory, onSelectReward }) => {
   const [activeTab, setActiveTab] = useState('ALL');
 
   const filteredItems = activeTab === 'ALL' ? MOCK_ITEMS : MOCK_ITEMS.filter(i => {
@@ -68,7 +70,7 @@ export const PointsMallView: React.FC<PointsMallProps> = ({ onBack, onHistory })
           {/* Grid */}
           <div className="grid grid-cols-2 gap-4 pb-10">
               {filteredItems.map(item => (
-                  <div key={item.id} className="bg-white rounded-xl overflow-hidden shadow-sm flex flex-col">
+                  <div key={item.id} className="bg-white rounded-xl overflow-hidden shadow-sm flex flex-col" onClick={() => onSelectReward?.(item)}>
                       <div className="h-32 bg-gray-100 relative">
                           <img src={item.image} className="w-full h-full object-cover" alt={item.name} />
                           <div className="absolute top-2 left-2 bg-black/50 backdrop-blur-sm text-white text-[9px] px-1.5 py-0.5 rounded">
@@ -91,3 +93,4 @@ export const PointsMallView: React.FC<PointsMallProps> = ({ onBack, onHistory })
     </div>
   );
 };
+    

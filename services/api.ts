@@ -119,7 +119,8 @@ const MOCK_CATEGORIES: Category[] = [
   { id: 7, name: '咖啡饮品', icon: '☕', sort: 7 },
 ];
 
-const MOCK_PRODUCTS: Product[] = [
+// Make mutable for favorites to persist in mock
+let MOCK_PRODUCTS: Product[] = [
   {
     id: 101,
     categoryId: 1,
@@ -129,7 +130,8 @@ const MOCK_PRODUCTS: Product[] = [
     tags: ['新品'],
     description: '巧克力爱好者的终极梦想，浓郁丝滑。',
     sales: 120,
-    status: 1
+    status: 1,
+    isFavorite: true
   },
   {
     id: 201,
@@ -165,7 +167,8 @@ const MOCK_PRODUCTS: Product[] = [
     image: 'https://images.unsplash.com/photo-1505253304499-671c55413c6e?w=400',
     description: '健康全麦制作，加入大颗核桃仁。',
     sales: 42,
-    status: 1
+    status: 1,
+    isFavorite: true
   },
   {
     id: 501,
@@ -301,6 +304,22 @@ export const api = {
       await new Promise(r => setTimeout(r, 300));
       return MOCK_PRODUCTS.slice(0, 3);
     }
+  },
+  
+  toggleFavorite: async (productId: number): Promise<boolean> => {
+      try {
+          // Simulate API call
+          await new Promise(r => setTimeout(r, 200));
+          // Update mock data persistence
+          const prodIndex = MOCK_PRODUCTS.findIndex(p => p.id === productId);
+          if (prodIndex >= 0) {
+             MOCK_PRODUCTS[prodIndex].isFavorite = !MOCK_PRODUCTS[prodIndex].isFavorite;
+             return MOCK_PRODUCTS[prodIndex].isFavorite || false;
+          }
+          return false;
+      } catch (e) {
+          return false;
+      }
   },
 
   // Order

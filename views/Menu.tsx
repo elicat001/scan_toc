@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { Search, ChevronRight, Plus, Minus, ShoppingCart, X } from 'lucide-react';
+import { Search, ChevronRight, Plus, Minus, ShoppingCart, X, Heart } from 'lucide-react';
 import { Product, Category, CartItem, Store, ProductSpec } from '../types';
 import { api } from '../services/api';
 
@@ -9,9 +9,10 @@ interface MenuProps {
   onAddToCart: (product: Product, quantity: number, specs?: Record<string, string>) => void;
   onRemoveFromCart: (productId: number) => void;
   onCheckout: () => void;
+  initialDiningMode?: 'dine-in' | 'pickup' | 'delivery';
 }
 
-export const MenuView: React.FC<MenuProps> = ({ cart, onAddToCart, onRemoveFromCart, onCheckout }) => {
+export const MenuView: React.FC<MenuProps> = ({ cart, onAddToCart, onRemoveFromCart, onCheckout, initialDiningMode = 'dine-in' }) => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [activeCategory, setActiveCategory] = useState(1);
@@ -19,6 +20,8 @@ export const MenuView: React.FC<MenuProps> = ({ cart, onAddToCart, onRemoveFromC
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalQuantity, setModalQuantity] = useState(1);
   const [storeInfo, setStoreInfo] = useState<Store | null>(null);
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+  const [diningMode, setDiningMode] = useState<'dine-in' | 'pickup' | 'delivery'>(initialDiningMode);
 
   useEffect(() => {
     api.getCategories().then(setCategories);
@@ -72,6 +75,22 @@ export const MenuView: React.FC<MenuProps> = ({ cart, onAddToCart, onRemoveFromC
     }
   };
 
+  const handleToggleFavorite = async (e: React.MouseEvent, product: Product) => {
+      e.stopPropagation();
+      // Optimistic update
+      setProducts(prev => prev.map(p => p.id === product.id ? { ...p, isFavorite: !p.isFavorite } : p));
+      
+      // Call API
+      await api.toggleFavorite(product.id);
+  };
+
+  const displayedProducts = useMemo(() => {
+      if (showFavoritesOnly) {
+          return products.filter(p => p.isFavorite);
+      }
+      return products;
+  }, [products, showFavoritesOnly]);
+
   return (
     <div className="flex flex-col h-screen bg-white">
       {/* Header */}
@@ -86,12 +105,39 @@ export const MenuView: React.FC<MenuProps> = ({ cart, onAddToCart, onRemoveFromC
             </p>
           </div>
           <div className="flex bg-gray-100/80 rounded-full p-1">
-            <button className="px-4 py-1.5 bg-gray-900 text-white rounded-full text-xs font-bold shadow-sm transition-all">堂食</button>
-            <button className="px-4 py-1.5 text-gray-500 text-xs font-medium hover:text-gray-900">配送</button>
-            <button className="px-4 py-1.5 text-gray-500 text-xs font-medium hover:text-gray-900">快递</button>
+            <button 
+              onClick={() => setDiningMode('dine-in')}
+              className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${diningMode === 'dine-in' ? 'bg-gray-900 text-white shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
+            >
+              堂食
+            </button>
+            <button 
+              onClick={() => setDiningMode('pickup')}
+              className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${diningMode === 'pickup' ? 'bg-gray-900 text-white shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
+            >
+              自取
+            </button>
+            <button 
+              onClick={() => setDiningMode('delivery')}
+              className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${diningMode === 'delivery' ? 'bg-gray-900 text-white shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
+            >
+              外送
+            </button>
           </div>
         </div>
-        <div className="flex gap-2 overflow-x-auto no-scrollbar py-1 pb-2">
+        <div className="flex gap-2 overflow-x-auto no-scrollbar py-1 pb-2 items-center">
+          <button 
+            onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+            className={`flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-medium border whitespace-nowrap transition-colors ${
+                showFavoritesOnly 
+                ? 'bg-red-50 border-red-200 text-red-500' 
+                : 'bg-gray-50 border-gray-200 text-gray-600'
+            }`}
+          >
+             <Heart size={10} className={showFavoritesOnly ? "fill-current" : ""} /> 
+             {showFavoritesOnly ? '已筛选收藏' : '我的收藏'}
+          </button>
+          <div className="w-[1px] h-3 bg-gray-200 mx-1"></div>
           <span className="text-[10px] text-[#B45309] font-medium border border-[#FDE68A] bg-[#FFFBEB] px-2 py-0.5 rounded-md whitespace-nowrap">会员商品6折起</span>
           <span className="text-[10px] text-[#B45309] font-medium border border-[#FDE68A] bg-[#FFFBEB] px-2 py-0.5 rounded-md whitespace-nowrap">订单≥0.01元, 充值3倍享免单</span>
         </div>
@@ -121,9 +167,12 @@ export const MenuView: React.FC<MenuProps> = ({ cart, onAddToCart, onRemoveFromC
         {/* Product List */}
         <div className="flex-1 h-full overflow-y-auto bg-white pb-36 px-4 w-[74%]">
           <div className="py-4">
-             <h3 className="font-bold text-sm mb-4 text-gray-800 sticky top-0 bg-white py-2 z-10">{categories.find(c => c.id === activeCategory)?.name}</h3>
+             <h3 className="font-bold text-sm mb-4 text-gray-800 sticky top-0 bg-white py-2 z-10 flex justify-between items-center">
+                 {categories.find(c => c.id === activeCategory)?.name}
+                 {showFavoritesOnly && <span className="text-[10px] text-red-500 font-normal bg-red-50 px-2 py-0.5 rounded-full">只看收藏</span>}
+             </h3>
              <div className="grid grid-cols-1 gap-8">
-               {products.length > 0 ? products.map(product => (
+               {displayedProducts.length > 0 ? displayedProducts.map(product => (
                  <div key={product.id} className="flex gap-3 group" onClick={() => handleOpenProduct(product)}>
                     <div className="relative w-24 h-24 flex-shrink-0">
                       <img 
@@ -131,6 +180,16 @@ export const MenuView: React.FC<MenuProps> = ({ cart, onAddToCart, onRemoveFromC
                         className="w-full h-full rounded-lg object-cover bg-gray-100 shadow-sm"
                         alt={product.name}
                       />
+                      {/* Favorite Icon */}
+                      <button 
+                        onClick={(e) => handleToggleFavorite(e, product)}
+                        className="absolute top-1 right-1 w-6 h-6 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center shadow-sm hover:bg-white transition-colors"
+                      >
+                         <Heart 
+                            size={12} 
+                            className={`transition-colors ${product.isFavorite ? 'text-red-500 fill-red-500' : 'text-gray-400'}`} 
+                         />
+                      </button>
                     </div>
                     <div className="flex-1 flex flex-col justify-between py-0.5">
                        <div>
@@ -173,7 +232,7 @@ export const MenuView: React.FC<MenuProps> = ({ cart, onAddToCart, onRemoveFromC
                     <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
                         <Search size={24} className="text-gray-300" />
                     </div>
-                    <span className="text-xs">该分类下暂无商品</span>
+                    <span className="text-xs">{showFavoritesOnly ? '暂无收藏商品' : '该分类下暂无商品'}</span>
                  </div>
                )}
              </div>
@@ -223,7 +282,12 @@ export const MenuView: React.FC<MenuProps> = ({ cart, onAddToCart, onRemoveFromC
 
                {/* Content */}
                <div className="p-5 overflow-y-auto flex-1">
-                   <h3 className="font-bold text-xl text-gray-900">{selectedProduct.name}</h3>
+                   <div className="flex justify-between items-start">
+                       <h3 className="font-bold text-xl text-gray-900">{selectedProduct.name}</h3>
+                       <button onClick={(e) => handleToggleFavorite(e, selectedProduct)} className="p-1">
+                           <Heart size={20} className={`transition-colors ${selectedProduct.isFavorite ? 'text-red-500 fill-red-500' : 'text-gray-400'}`} />
+                       </button>
+                   </div>
                    <p className="text-xs text-gray-500 mt-2 leading-relaxed">{selectedProduct.description || '暂无描述'}</p>
                    
                    {/* Specs Section */}
@@ -286,3 +350,4 @@ export const MenuView: React.FC<MenuProps> = ({ cart, onAddToCart, onRemoveFromC
     </div>
   );
 };
+    
