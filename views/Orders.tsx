@@ -65,7 +65,7 @@ export const OrdersView: React.FC<OrdersProps> = ({ onSelectOrder }) => {
             
             <div className="flex justify-between items-baseline mb-3">
                <span className="text-2xl font-bold text-gray-900/10 font-mono tracking-tighter">{order.id}</span>
-               <span className="text-[10px] text-gray-400">{order.date}</span>
+               <span className="text-[10px] text-gray-400">{order.createTime}</span>
             </div>
 
             {/* Items Scroll */}
@@ -88,7 +88,7 @@ export const OrdersView: React.FC<OrdersProps> = ({ onSelectOrder }) => {
                </div>
                <div className="flex items-baseline gap-1">
                   <span className="text-xs text-gray-900 font-medium">实付</span>
-                  <span className="font-bold text-lg text-gray-900">¥{order.total.toFixed(2)}</span>
+                  <span className="font-bold text-lg text-gray-900">¥{order.totalAmount.toFixed(2)}</span>
                </div>
             </div>
             

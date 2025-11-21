@@ -1,4 +1,11 @@
 
+// Standard API Response Wrapper
+export interface ApiResponse<T> {
+  code: number;
+  msg: string;
+  data: T;
+}
+
 export interface User {
   id: string;
   name: string;
@@ -9,26 +16,37 @@ export interface User {
   coupons: number;
   memberCode: string;
   isVip: boolean;
+  birthday?: string;
+  gender?: number; // 0: unknown, 1: male, 2: female
 }
 
 export interface Address {
   id: string;
   contact: string;
   phone: string;
-  location: string;
-  detail: string;
-  tag: string; // e.g., 'Home', 'Company'
+  province?: string;
+  city?: string;
+  district?: string;
+  location: string; // Address line 1
+  detail: string;   // Address line 2
+  tag: string;      // e.g., 'Home', 'Company'
   isDefault: boolean;
+  latitude?: number;
+  longitude?: number;
 }
 
 export interface Store {
   id: number;
   name: string;
-  distance: string;
+  distance: string; // Formatted string from backend or calculated on client
   address: string;
   image: string;
   tags: string[];
   status: 'OPEN' | 'CLOSED';
+  latitude?: number;
+  longitude?: number;
+  phone?: string;
+  businessHours?: string;
 }
 
 export interface ProductSpec {
@@ -50,43 +68,70 @@ export interface Product {
   specs?: ProductSpec[];
   sales?: number;
   stock?: number;
+  status?: number; // 1: on_sale, 0: off_shelf
 }
 
 export interface Category {
   id: number;
   name: string;
   icon?: string;
+  sort?: number;
 }
 
 export interface CartItem extends Product {
   quantity: number;
-  selectedSpec?: Record<string, string>; // e.g., { "Size": "Large", "Sugar": "Less" }
+  selectedSpec?: Record<string, string>; 
 }
 
 export enum OrderStatus {
-  PAID = '已支付',
-  CANCELLED = '已取消',
   PENDING = '待支付',
-  COMPLETED = '已完成'
+  PAID = '已支付',
+  PREPARING = '制作中',
+  DELIVERING = '配送中',
+  COMPLETED = '已完成',
+  CANCELLED = '已取消'
 }
 
 export interface OrderItem {
+  productId: number;
   name: string;
   image: string;
   count: number;
   price: number;
+  specSnapshot?: string;
 }
 
 export interface Order {
   id: string;
+  storeId: number;
   storeName: string;
   status: OrderStatus;
-  date: string;
+  createTime: string;
   items: OrderItem[];
-  total: number;
+  totalAmount: number;
+  payAmount: number;
+  discountAmount: number;
   type: 'Dine In' | 'Pick Up' | 'Delivery';
+  remark?: string;
 }
 
+export interface Banner {
+  id: number;
+  imageUrl: string;
+  linkUrl?: string;
+  title?: string;
+}
+
+export interface Coupon {
+  id: number;
+  name: string;
+  amount: number;
+  minSpend: number;
+  type: 'DISCOUNT' | 'CASH';
+  expireDate: string;
+}
+
+// View States for Routing
 export type ViewState = 
   | 'HOME' 
   | 'MENU' 

@@ -18,7 +18,7 @@ export const OrderDetailView: React.FC<OrderDetailProps> = ({ order, onBack }) =
          <div className="w-8"></div>
       </div>
 
-      <div className="flex-1 overflow-y-auto pb- safe">
+      <div className="flex-1 overflow-y-auto pb-safe">
          {/* Status Area */}
          <div className="bg-white p-6 mb-3">
              <h1 className="text-2xl font-bold text-gray-900 mb-1">{order.status}</h1>
@@ -59,15 +59,15 @@ export const OrderDetailView: React.FC<OrderDetailProps> = ({ order, onBack }) =
              <div className="p-4 border-t border-dashed border-gray-100 space-y-2">
                 <div className="flex justify-between text-xs">
                    <span className="text-gray-500">商品总价</span>
-                   <span className="text-gray-900">¥{order.total.toFixed(2)}</span>
+                   <span className="text-gray-900">¥{order.totalAmount.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-xs">
                    <span className="text-gray-500">优惠金额</span>
-                   <span className="text-gray-900">-¥0.00</span>
+                   <span className="text-gray-900">-¥{order.discountAmount.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between items-center pt-2">
                    <span className="text-gray-500 text-sm">实付</span>
-                   <span className="text-xl font-bold text-gray-900">¥{order.total.toFixed(2)}</span>
+                   <span className="text-xl font-bold text-gray-900">¥{order.payAmount.toFixed(2)}</span>
                 </div>
              </div>
          </div>
@@ -84,7 +84,7 @@ export const OrderDetailView: React.FC<OrderDetailProps> = ({ order, onBack }) =
                 </div>
                 <div className="flex justify-between text-xs">
                    <span className="text-gray-500">下单时间</span>
-                   <span className="text-gray-900">{order.date}</span>
+                   <span className="text-gray-900">{order.createTime}</span>
                 </div>
                 <div className="flex justify-between text-xs">
                    <span className="text-gray-500">支付方式</span>

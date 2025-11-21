@@ -1,7 +1,41 @@
 
-import { User, Product, Category, Order, Store, OrderStatus, Address } from '../types';
+import { User, Product, Category, Order, Store, OrderStatus, Address, Banner, ApiResponse } from '../types';
 
-// --- Mock Data ---
+// --- Configuration ---
+const API_BASE_URL = 'https://api.your-saas-backend.com/api/v1'; // Replace with actual backend URL
+const USE_MOCK = true; // Toggle this to false to use real API calls
+
+// --- Helper Types & Methods ---
+
+async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  if (USE_MOCK) {
+    throw new Error("Mock mode enabled, skipping network request");
+  }
+
+  const token = localStorage.getItem('token');
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+    ...options.headers,
+  };
+
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    ...options,
+    headers,
+  });
+
+  if (!response.ok) {
+    throw new Error(`API Error: ${response.statusText}`);
+  }
+
+  const res: ApiResponse<T> = await response.json();
+  if (res.code !== 200) {
+    throw new Error(res.msg || 'Unknown API error');
+  }
+  return res.data;
+}
+
+// --- Mock Data (Fallback) ---
 
 const MOCK_USER: User = {
   id: 'u123',
@@ -10,10 +44,16 @@ const MOCK_USER: User = {
   avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix',
   points: 19,
   balance: 0.00,
-  coupons: 0,
+  coupons: 2,
   memberCode: '882910',
   isVip: false,
+  gender: 0,
 };
+
+const MOCK_BANNERS: Banner[] = [
+  { id: 1, imageUrl: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&h=400&fit=crop', title: 'Summer Special' },
+  { id: 2, imageUrl: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=800&h=400&fit=crop', title: 'New Arrivals' }
+];
 
 const MOCK_ADDRESSES: Address[] = [
   {
@@ -44,7 +84,8 @@ const MOCK_STORES: Store[] = [
     distance: '99.4km',
     image: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?q=80&w=1000&auto=format&fit=crop',
     tags: ['营业中', '最近常去'],
-    status: 'OPEN'
+    status: 'OPEN',
+    businessHours: '08:00-22:00'
   },
   {
     id: 2,
@@ -53,7 +94,8 @@ const MOCK_STORES: Store[] = [
     distance: '102.1km',
     image: 'https://images.unsplash.com/photo-1559925393-8be0ec4767c8?w=400',
     tags: ['营业中', '人气好店'],
-    status: 'OPEN'
+    status: 'OPEN',
+    businessHours: '09:00-22:30'
   },
   {
     id: 3,
@@ -62,18 +104,19 @@ const MOCK_STORES: Store[] = [
     distance: '105.3km',
     image: 'https://images.unsplash.com/photo-1445116572660-236099ec97a0?w=400',
     tags: ['休息中'],
-    status: 'CLOSED'
+    status: 'CLOSED',
+    businessHours: '10:00-22:00'
   }
 ];
 
 const MOCK_CATEGORIES: Category[] = [
-  { id: 1, name: '门店推荐', icon: '🔥' },
-  { id: 2, name: '店铺线下活动', icon: '🎉' },
-  { id: 3, name: '进店福利', icon: '🎁' },
-  { id: 4, name: '贝果&牛角', icon: '🥯' },
-  { id: 5, name: '瑞士卷', icon: '🍰' },
-  { id: 6, name: '切块蛋糕', icon: '🧁' },
-  { id: 7, name: '咖啡饮品', icon: '☕' },
+  { id: 1, name: '门店推荐', icon: '🔥', sort: 1 },
+  { id: 2, name: '店铺线下活动', icon: '🎉', sort: 2 },
+  { id: 3, name: '进店福利', icon: '🎁', sort: 3 },
+  { id: 4, name: '贝果&牛角', icon: '🥯', sort: 4 },
+  { id: 5, name: '瑞士卷', icon: '🍰', sort: 5 },
+  { id: 6, name: '切块蛋糕', icon: '🧁', sort: 6 },
+  { id: 7, name: '咖啡饮品', icon: '☕', sort: 7 },
 ];
 
 const MOCK_PRODUCTS: Product[] = [
@@ -85,7 +128,8 @@ const MOCK_PRODUCTS: Product[] = [
     image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400',
     tags: ['新品'],
     description: '巧克力爱好者的终极梦想，浓郁丝滑。',
-    sales: 120
+    sales: 120,
+    status: 1
   },
   {
     id: 201,
@@ -99,7 +143,9 @@ const MOCK_PRODUCTS: Product[] = [
     tags: ['热销'],
     specs: [
       { name: '份量', options: ['1人份'] }
-    ]
+    ],
+    sales: 500,
+    status: 1
   },
   {
     id: 301,
@@ -107,7 +153,9 @@ const MOCK_PRODUCTS: Product[] = [
     name: '碱水贝果',
     price: 12.0,
     image: 'https://images.unsplash.com/photo-1621236378699-8597fab6a551?w=400',
-    description: '经典德式风味，口感韧劲十足。'
+    description: '经典德式风味，口感韧劲十足。',
+    sales: 85,
+    status: 1
   },
   {
     id: 302,
@@ -115,7 +163,9 @@ const MOCK_PRODUCTS: Product[] = [
     name: '全麦核桃贝果',
     price: 15.0,
     image: 'https://images.unsplash.com/photo-1505253304499-671c55413c6e?w=400',
-    description: '健康全麦制作，加入大颗核桃仁。'
+    description: '健康全麦制作，加入大颗核桃仁。',
+    sales: 42,
+    status: 1
   },
   {
     id: 501,
@@ -123,85 +173,174 @@ const MOCK_PRODUCTS: Product[] = [
     name: '伯爵茶瑞士卷',
     price: 22.0,
     image: 'https://images.unsplash.com/photo-1534353473418-4cfa6c56fd38?w=400',
+    sales: 200,
+    status: 1
   }
 ];
 
 const MOCK_ORDERS: Order[] = [
   {
     id: '3662',
+    storeId: 1,
     storeName: '棠小一',
     status: OrderStatus.PAID,
-    date: '2025-09-04 19:31',
-    total: 54.40,
-    items: [{ name: '开心果千层', count: 8, price: 54.40, image: 'https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=200' }],
+    createTime: '2025-09-04 19:31',
+    totalAmount: 54.40,
+    payAmount: 54.40,
+    discountAmount: 0,
+    items: [{ productId: 1001, name: '开心果千层', count: 8, price: 54.40, image: 'https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=200' }],
     type: 'Dine In'
   },
   {
     id: '6062',
+    storeId: 1,
     storeName: '棠小一',
     status: OrderStatus.PAID,
-    date: '2025-08-21 15:16',
-    total: 19.45,
-    items: [{ name: '巧克力卷', count: 1, price: 19.45, image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=200' }],
+    createTime: '2025-08-21 15:16',
+    totalAmount: 19.45,
+    payAmount: 19.45,
+    discountAmount: 0,
+    items: [{ productId: 501, name: '巧克力卷', count: 1, price: 19.45, image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=200' }],
     type: 'Dine In'
   },
   {
     id: '1639',
+    storeId: 1,
     storeName: '棠小一',
     status: OrderStatus.PAID,
-    date: '2025-08-04 14:22',
-    total: 10.90,
-    items: [{ name: '可丽露', count: 1, price: 10.90, image: 'https://images.unsplash.com/photo-1605170426232-4127c4302f60?w=200' }],
+    createTime: '2025-08-04 14:22',
+    totalAmount: 10.90,
+    payAmount: 10.90,
+    discountAmount: 0,
+    items: [{ productId: 901, name: '可丽露', count: 1, price: 10.90, image: 'https://images.unsplash.com/photo-1605170426232-4127c4302f60?w=200' }],
     type: 'Dine In'
   }
 ];
 
-// --- API Interface ---
+// --- API Service Implementation ---
 
 export const api = {
+  
+  // Auth & User
   getUserProfile: async (): Promise<User> => {
-    await new Promise(resolve => setTimeout(resolve, 500)); // Simulate network delay
-    return MOCK_USER;
-  },
-
-  getStoreInfo: async (): Promise<Store> => {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    return MOCK_STORES[0];
-  },
-  
-  getStores: async (): Promise<Store[]> => {
-    await new Promise(resolve => setTimeout(resolve, 400));
-    return MOCK_STORES;
-  },
-
-  getAddresses: async (): Promise<Address[]> => {
-    await new Promise(resolve => setTimeout(resolve, 400));
-    return MOCK_ADDRESSES;
-  },
-
-  getCategories: async (): Promise<Category[]> => {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    return MOCK_CATEGORIES;
-  },
-
-  getProducts: async (categoryId?: number): Promise<Product[]> => {
-    await new Promise(resolve => setTimeout(resolve, 400));
-    if (categoryId) {
-      // In a real app, we might fetch only for that category
-      // Here we filter our mock list, but to make it look full we return all for "Recommended" (id 1)
-      if (categoryId === 1) return MOCK_PRODUCTS;
-      return MOCK_PRODUCTS.filter(p => p.categoryId === categoryId || categoryId === 1);
+    try {
+      return await request<User>('/user/profile');
+    } catch (e) {
+      await new Promise(r => setTimeout(r, 500));
+      return MOCK_USER;
     }
-    return MOCK_PRODUCTS;
   },
 
-  getOrders: async (): Promise<Order[]> => {
-    await new Promise(resolve => setTimeout(resolve, 600));
-    return MOCK_ORDERS;
+  updateUserProfile: async (data: Partial<User>): Promise<User> => {
+    try {
+      return await request<User>('/user/profile', { method: 'PUT', body: JSON.stringify(data) });
+    } catch (e) {
+      await new Promise(r => setTimeout(r, 500));
+      return { ...MOCK_USER, ...data };
+    }
   },
-  
-  createOrder: async (cart: any): Promise<{success: boolean, orderId: string}> => {
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    return { success: true, orderId: Math.random().toString().slice(2, 8) };
+
+  // Store
+  getStores: async (latitude?: number, longitude?: number): Promise<Store[]> => {
+    try {
+      const query = latitude ? `?lat=${latitude}&lng=${longitude}` : '';
+      return await request<Store[]>(`/shop/list${query}`);
+    } catch (e) {
+      await new Promise(r => setTimeout(r, 400));
+      return MOCK_STORES;
+    }
+  },
+
+  getStoreInfo: async (id: number = 1): Promise<Store> => {
+    try {
+      return await request<Store>(`/shop/${id}`);
+    } catch (e) {
+      await new Promise(r => setTimeout(r, 300));
+      return MOCK_STORES.find(s => s.id === id) || MOCK_STORES[0];
+    }
+  },
+
+  // Product & Category
+  getCategories: async (storeId?: number): Promise<Category[]> => {
+    try {
+      return await request<Category[]>(`/category/list?storeId=${storeId || ''}`);
+    } catch (e) {
+      await new Promise(r => setTimeout(r, 300));
+      return MOCK_CATEGORIES;
+    }
+  },
+
+  getProducts: async (categoryId?: number, storeId?: number): Promise<Product[]> => {
+    try {
+      const params = new URLSearchParams();
+      if (categoryId) params.append('categoryId', categoryId.toString());
+      if (storeId) params.append('storeId', storeId.toString());
+      return await request<Product[]>(`/product/list?${params.toString()}`);
+    } catch (e) {
+      await new Promise(r => setTimeout(r, 400));
+      if (categoryId) {
+        if (categoryId === 1) return MOCK_PRODUCTS;
+        return MOCK_PRODUCTS.filter(p => p.categoryId === categoryId || categoryId === 1);
+      }
+      return MOCK_PRODUCTS;
+    }
+  },
+
+  getRecommendProducts: async (): Promise<Product[]> => {
+    try {
+      return await request<Product[]>('/product/recommend');
+    } catch (e) {
+      await new Promise(r => setTimeout(r, 300));
+      return MOCK_PRODUCTS.slice(0, 3);
+    }
+  },
+
+  // Order
+  getOrders: async (status?: string): Promise<Order[]> => {
+    try {
+      return await request<Order[]>(`/order/list${status ? `?status=${status}` : ''}`);
+    } catch (e) {
+      await new Promise(r => setTimeout(r, 600));
+      return MOCK_ORDERS;
+    }
+  },
+
+  createOrder: async (data: { storeId: number, items: any[], type: string }): Promise<{success: boolean, orderId: string}> => {
+    try {
+      const res = await request<{orderId: string}>('/order/create', { method: 'POST', body: JSON.stringify(data) });
+      return { success: true, orderId: res.orderId };
+    } catch (e) {
+      await new Promise(r => setTimeout(r, 1000));
+      return { success: true, orderId: Math.random().toString().slice(2, 8) };
+    }
+  },
+
+  // Address
+  getAddresses: async (): Promise<Address[]> => {
+    try {
+      return await request<Address[]>('/address/list');
+    } catch (e) {
+      await new Promise(r => setTimeout(r, 400));
+      return MOCK_ADDRESSES;
+    }
+  },
+
+  addAddress: async (data: Partial<Address>): Promise<Address> => {
+    try {
+      return await request<Address>('/address/add', { method: 'POST', body: JSON.stringify(data) });
+    } catch (e) {
+      await new Promise(r => setTimeout(r, 500));
+      return { ...MOCK_ADDRESSES[0], ...data, id: Math.random().toString() } as Address;
+    }
+  },
+
+  // Marketing
+  getBanners: async (): Promise<Banner[]> => {
+    try {
+      return await request<Banner[]>('/marketing/banners');
+    } catch (e) {
+      await new Promise(r => setTimeout(r, 200));
+      return MOCK_BANNERS;
+    }
   }
 };
