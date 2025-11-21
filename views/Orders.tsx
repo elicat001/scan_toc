@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Order, OrderStatus } from '../types';
-import { ChevronRight, Search } from 'lucide-react';
+import { ChevronRight, Search, X } from 'lucide-react';
 import { api } from '../services/api';
 
 interface OrdersProps {
@@ -12,38 +12,87 @@ interface OrdersProps {
 export const OrdersView: React.FC<OrdersProps> = ({ onSelectOrder, onOrderAgain }) => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [activeTab, setActiveTab] = useState('ALL');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [reorderingId, setReorderingId] = useState<string | null>(null);
 
   useEffect(() => {
     api.getOrders().then(setOrders);
   }, []);
 
+  const handleOrderAgainClick = async (e: React.MouseEvent, order: Order) => {
+    e.stopPropagation();
+    if (onOrderAgain) {
+        setReorderingId(order.id);
+        // Simulate brief loading state
+        await new Promise(r => setTimeout(r, 500));
+        onOrderAgain(order);
+        setReorderingId(null);
+    }
+  };
+
+  // Filter orders based on Search Query
+  // Note: Tab filtering is visual-only in this demo as mock data types don't perfectly map 1:1 to tabs yet, 
+  // but search applies to all.
+  const filteredOrders = orders.filter(order => {
+      const query = searchQuery.toLowerCase();
+      const matchesSearch = order.id.toLowerCase().includes(query) || 
+                            order.storeName.toLowerCase().includes(query);
+      
+      // Optional: Implement tab filtering if needed, currently sticking to search as requested
+      // const matchesTab = activeTab === 'ALL' || ... 
+      
+      return matchesSearch;
+  });
+
   return (
     <div className="min-h-screen bg-[#F3F4F6] pb-24 flex flex-col">
-      {/* Header */}
-      <div className="bg-white p-4 text-center font-bold text-lg sticky top-0 z-20 shadow-sm">
-        我的订单
-      </div>
-
-      {/* Tabs */}
-      <div className="bg-white flex justify-around text-sm text-gray-500 sticky top-[60px] z-20 pt-2">
-        {['全部', '堂食', '配送', '快递'].map((tab) => {
-          const isActive = (activeTab === 'ALL' && tab === '全部') || activeTab === tab;
-          return (
-            <div 
-              key={tab}
-              onClick={() => setActiveTab(tab === '全部' ? 'ALL' : tab)}
-              className={`pb-3 px-4 relative cursor-pointer transition-colors ${isActive ? 'text-gray-900 font-bold' : 'text-gray-500'}`}
-            >
-              {tab}
-              {isActive && <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-1 bg-[#FDE047] rounded-full"></div>}
+      {/* Sticky Header Section (Title + Search + Tabs) */}
+      <div className="bg-white sticky top-0 z-30 shadow-sm">
+        {/* Title & Search */}
+        <div className="px-4 pt-4 pb-2">
+            <div className="text-center font-bold text-lg mb-4">我的订单</div>
+            
+            <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                <input 
+                    type="text" 
+                    placeholder="搜索订单号 / 门店名称"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full bg-gray-100 text-sm py-2 pl-9 pr-8 rounded-full outline-none focus:ring-2 focus:ring-[#FDE047]/50 transition-all placeholder:text-gray-400"
+                />
+                {searchQuery && (
+                    <button 
+                        onClick={() => setSearchQuery('')}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600"
+                    >
+                        <X size={14} />
+                    </button>
+                )}
             </div>
-          );
-        })}
+        </div>
+
+        {/* Tabs */}
+        <div className="flex justify-around text-sm text-gray-500 pt-2 border-t border-gray-50 mt-2">
+            {['全部', '堂食', '配送', '快递'].map((tab) => {
+            const isActive = (activeTab === 'ALL' && tab === '全部') || activeTab === tab;
+            return (
+                <div 
+                key={tab}
+                onClick={() => setActiveTab(tab === '全部' ? 'ALL' : tab)}
+                className={`pb-3 px-4 relative cursor-pointer transition-colors ${isActive ? 'text-gray-900 font-bold' : 'text-gray-500'}`}
+                >
+                {tab}
+                {isActive && <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-1 bg-[#FDE047] rounded-full"></div>}
+                </div>
+            );
+            })}
+        </div>
       </div>
 
       {/* List */}
       <div className="p-4 space-y-3 flex-1 overflow-y-auto">
-        {orders.length > 0 ? orders.map((order) => (
+        {filteredOrders.length > 0 ? filteredOrders.map((order) => (
           <div 
             key={order.id} 
             onClick={() => onSelectOrder(order)}
@@ -97,13 +146,15 @@ export const OrdersView: React.FC<OrdersProps> = ({ onSelectOrder, onOrderAgain 
             <div className="mt-3 pt-2 flex justify-end gap-2">
                 <button onClick={(e) => e.stopPropagation()} className="px-3 py-1.5 rounded-full border border-gray-200 text-xs font-medium text-gray-600">开发票</button>
                 <button 
-                  onClick={(e) => { 
-                    e.stopPropagation(); 
-                    if (onOrderAgain) onOrderAgain(order); 
-                  }} 
-                  className="px-3 py-1.5 rounded-full border border-[#FDE047] bg-[#fffbe6] text-xs font-bold text-gray-800"
+                  onClick={(e) => handleOrderAgainClick(e, order)} 
+                  className="px-3 py-1.5 rounded-full border border-[#FDE047] bg-[#fffbe6] text-xs font-bold text-gray-800 flex items-center gap-1 min-w-[80px] justify-center"
+                  disabled={reorderingId === order.id}
                 >
-                  再来一单
+                  {reorderingId === order.id ? (
+                      <div className="w-3 h-3 border-2 border-gray-800 border-t-transparent rounded-full animate-spin"></div>
+                  ) : (
+                      "再来一单"
+                  )}
                 </button>
             </div>
           </div>
@@ -112,7 +163,9 @@ export const OrdersView: React.FC<OrdersProps> = ({ onSelectOrder, onOrderAgain 
               <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mb-4">
                   <Search size={24} className="text-gray-400" />
               </div>
-              <p className="text-sm">暂无订单</p>
+              <p className="text-sm">
+                  {searchQuery ? '未找到相关订单' : '暂无订单'}
+              </p>
            </div>
         )}
       </div>
