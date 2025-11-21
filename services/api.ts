@@ -1,5 +1,5 @@
 
-import { User, Product, Category, Order, Store, OrderStatus, Address, Banner, ApiResponse, PointRecord } from '../types';
+import { User, Product, Category, Order, Store, OrderStatus, Address, Banner, ApiResponse, PointRecord, Coupon } from '../types';
 
 // --- Configuration ---
 const API_BASE_URL = 'https://api.your-saas-backend.com/api/v1'; // Replace with actual backend URL
@@ -37,7 +37,7 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
 
 // --- Mock Data (Fallback) ---
 
-const MOCK_USER: User = {
+let MOCK_USER: User = {
   id: 'u123',
   name: '粒',
   phone: '188****4331',
@@ -157,11 +157,7 @@ let MOCK_PRODUCTS: Product[] = [
     image: 'https://images.unsplash.com/photo-1621236378699-8597fab6a551?w=400',
     description: '经典德式风味，口感韧劲十足。',
     sales: 85,
-    status: 1,
-    specs: [
-        { name: '尺寸', options: ['常规', '大份'] },
-        { name: '选项', options: ['标准', '无麸质'] }
-    ]
+    status: 1
   },
   {
     id: 302,
@@ -232,6 +228,11 @@ const MOCK_POINT_RECORDS: PointRecord[] = [
     { id: 5, title: '完善生日信息奖励', amount: 100, createTime: '2025-07-01 12:00', type: 'EARN' },
 ];
 
+const MOCK_COUPONS: Coupon[] = [
+  { id: 1, name: '新人专享券', amount: 5, minSpend: 30, type: 'CASH', expireDate: '2025-12-31' },
+  { id: 2, name: '满100减15', amount: 15, minSpend: 100, type: 'CASH', expireDate: '2025-11-30' },
+];
+
 // --- API Service Implementation ---
 
 export const api = {
@@ -251,7 +252,9 @@ export const api = {
       return await request<User>('/user/profile', { method: 'PUT', body: JSON.stringify(data) });
     } catch (e) {
       await new Promise(r => setTimeout(r, 500));
-      return { ...MOCK_USER, ...data };
+      // Update in-memory mock user
+      MOCK_USER = { ...MOCK_USER, ...data };
+      return MOCK_USER;
     }
   },
 
@@ -392,6 +395,15 @@ export const api = {
       } catch (e) {
           await new Promise(r => setTimeout(r, 300));
           return MOCK_POINT_RECORDS;
+      }
+  },
+
+  getCoupons: async (): Promise<Coupon[]> => {
+      try {
+          return await request<Coupon[]>('/user/coupons');
+      } catch (e) {
+          await new Promise(r => setTimeout(r, 300));
+          return MOCK_COUPONS;
       }
   }
 };

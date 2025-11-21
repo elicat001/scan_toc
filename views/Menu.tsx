@@ -6,7 +6,7 @@ import { api } from '../services/api';
 
 interface MenuProps {
   cart: CartItem[];
-  onAddToCart: (product: Product, quantity: number, specs?: Record<string, string>, notes?: string) => void;
+  onAddToCart: (product: Product, quantity: number, specs?: Record<string, string>) => void;
   onRemoveFromCart: (productId: number) => void;
   onCheckout: () => void;
   initialDiningMode?: 'dine-in' | 'pickup' | 'delivery';
@@ -19,8 +19,6 @@ export const MenuView: React.FC<MenuProps> = ({ cart, onAddToCart, onRemoveFromC
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalQuantity, setModalQuantity] = useState(1);
-  const [modalNotes, setModalNotes] = useState('');
-  const [selectedSpecs, setSelectedSpecs] = useState<Record<string, string>>({});
   const [storeInfo, setStoreInfo] = useState<Store | null>(null);
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [diningMode, setDiningMode] = useState<'dine-in' | 'pickup' | 'delivery'>(initialDiningMode);
@@ -45,16 +43,6 @@ export const MenuView: React.FC<MenuProps> = ({ cart, onAddToCart, onRemoveFromC
   const handleOpenProduct = (product: Product) => {
     setSelectedProduct(product);
     setModalQuantity(1);
-    setModalNotes('');
-    
-    // Initialize specs
-    const initialSpecs: Record<string, string> = {};
-    if (product.specs) {
-        product.specs.forEach(spec => {
-            initialSpecs[spec.name] = spec.options[0];
-        });
-    }
-    setSelectedSpecs(initialSpecs);
     setIsModalOpen(true);
   };
 
@@ -63,16 +51,17 @@ export const MenuView: React.FC<MenuProps> = ({ cart, onAddToCart, onRemoveFromC
     setTimeout(() => setSelectedProduct(null), 300);
   };
 
-  const handleSpecSelect = (specName: string, option: string) => {
-      setSelectedSpecs(prev => ({
-          ...prev,
-          [specName]: option
-      }));
-  };
-
   const handleAddFromModal = () => {
     if (selectedProduct) {
-      onAddToCart(selectedProduct, modalQuantity, selectedSpecs, modalNotes);
+      // For simplicity, we select the first option of each spec by default if not implemented
+      const defaultSpecs: Record<string, string> = {};
+      if (selectedProduct.specs) {
+        selectedProduct.specs.forEach(s => {
+          defaultSpecs[s.name] = s.options[0];
+        });
+      }
+      
+      onAddToCart(selectedProduct, modalQuantity, defaultSpecs);
       handleCloseModal();
     }
   };
@@ -307,22 +296,11 @@ export const MenuView: React.FC<MenuProps> = ({ cart, onAddToCart, onRemoveFromC
                         <div key={spec.name}>
                           <p className="text-xs text-gray-500 mb-2 font-medium">{spec.name}</p>
                           <div className="flex gap-2 flex-wrap">
-                              {spec.options.map((opt) => {
-                                const isSelected = selectedSpecs[spec.name] === opt;
-                                return (
-                                  <button 
-                                    key={opt} 
-                                    onClick={() => handleSpecSelect(spec.name, opt)}
-                                    className={`px-4 py-1.5 rounded-md text-sm font-bold transition-all ${
-                                        isSelected 
-                                        ? 'bg-[#FDE047]/20 text-gray-900 border border-[#FDE047]' 
-                                        : 'bg-gray-100 text-gray-600 border border-transparent'
-                                    }`}
-                                  >
-                                    {opt}
-                                  </button>
-                                );
-                              })}
+                              {spec.options.map((opt, idx) => (
+                                <button key={opt} className={`px-4 py-1.5 rounded-md text-sm font-bold transition-all ${idx === 0 ? 'bg-[#FDE047]/20 text-gray-900 border border-[#FDE047]' : 'bg-gray-100 text-gray-600 border border-transparent'}`}>
+                                  {opt}
+                                </button>
+                              ))}
                           </div>
                         </div>
                       )) : (
@@ -333,17 +311,6 @@ export const MenuView: React.FC<MenuProps> = ({ cart, onAddToCart, onRemoveFromC
                           </button>
                         </div>
                       )}
-
-                      {/* Notes Section */}
-                      <div className="pt-2">
-                        <p className="text-xs text-gray-500 mb-2 font-medium">备注 (选填)</p>
-                        <textarea
-                          value={modalNotes}
-                          onChange={(e) => setModalNotes(e.target.value)}
-                          placeholder="例如：少冰，少糖，不要香菜..."
-                          className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#FDE047] resize-none h-20 placeholder:text-gray-400"
-                        />
-                      </div>
                    </div>
                </div>
 
@@ -383,3 +350,4 @@ export const MenuView: React.FC<MenuProps> = ({ cart, onAddToCart, onRemoveFromC
     </div>
   );
 };
+    
