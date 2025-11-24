@@ -48,7 +48,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
     onClose();
   };
 
-  const currentPrice = product.isVip ? product.vipPrice! : product.price;
+  const currentPrice = product.isVip ? (product.vipPrice || product.price) : product.price;
   const totalPrice = (currentPrice * quantity).toFixed(2);
   const originalTotal = (product.price * quantity).toFixed(2);
 

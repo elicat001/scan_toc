@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { BottomNav } from './components/BottomNav';
 import { HomeView } from './views/Home';
