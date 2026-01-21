@@ -1,8 +1,10 @@
 
 import React, { useEffect, useState } from 'react';
-import { MapPin, ChevronRight, Store, ShoppingBag, Truck, Calendar, Navigation, Phone, QrCode } from 'lucide-react';
+// Added Plus to the lucide-react imports
+import { MapPin, ChevronRight, Store, ShoppingBag, Truck, Calendar, Navigation, Phone, QrCode, Bell, Settings, Plus } from 'lucide-react';
 import { ViewState, User, Store as StoreType, Banner, Product } from '../types';
 import { api } from '../services/api';
+import { HomeSkeleton } from '../components/Skeleton';
 
 interface HomeProps {
   onNavigate: (view: ViewState) => void;
@@ -13,199 +15,182 @@ export const HomeView: React.FC<HomeProps> = ({ onNavigate }) => {
   const [store, setStore] = useState<StoreType | null>(null);
   const [banners, setBanners] = useState<Banner[]>([]);
   const [recommendProducts, setRecommendProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.getUserProfile().then(setUser);
-    api.getStoreInfo().then(setStore);
-    api.getBanners().then(setBanners);
-    api.getRecommendProducts().then(setRecommendProducts);
+    const fetchData = async () => {
+      try {
+        const [userData, storeData, bannerData, productsData] = await Promise.all([
+          api.getUserProfile(),
+          api.getStoreInfo(),
+          api.getBanners(),
+          api.getRecommendProducts()
+        ]);
+        setUser(userData);
+        setStore(storeData);
+        setBanners(bannerData);
+        setRecommendProducts(productsData);
+      } finally {
+        // 模拟稍长一点的加载时间以展示骨架屏
+        setTimeout(() => setLoading(false), 800);
+      }
+    };
+    fetchData();
   }, []);
 
+  if (loading) return <HomeSkeleton />;
+
   return (
-    <div className="flex flex-col h-full overflow-y-auto pb-20 bg-[#F3F4F6]">
-      {/* Header Area */}
-      <div className="bg-white p-4 pb-6 rounded-b-[2rem] shadow-sm">
-        {/* Top Bar */}
-        <div className="flex justify-between items-start mb-6 pt-2">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-1">{user ? user.name : '加载中...'}</h1>
-            <p className="text-xs text-gray-400">暂未开通此VIP特权</p>
-          </div>
-          <div 
-            onClick={() => onNavigate('MEMBER_CODE')}
-            className="flex items-center gap-1 bg-yellow-100/80 px-3 py-1.5 rounded-full border border-yellow-200 cursor-pointer active:scale-95 transition-transform"
-          >
-            <div className="grid grid-cols-2 gap-0.5 w-3 h-3">
-               <div className="bg-yellow-600 rounded-[1px]"></div>
-               <div className="bg-yellow-600/50 rounded-[1px]"></div>
-               <div className="bg-yellow-600/50 rounded-[1px]"></div>
-               <div className="bg-yellow-600 rounded-[1px]"></div>
-            </div>
-            <span className="text-[10px] text-yellow-700 font-bold ml-1">会员码</span>
-          </div>
+    <div className="flex flex-col h-full overflow-y-auto pb-24 bg-[#F8F9FA]">
+      {/* Immersive Header Area */}
+      <div className="relative bg-white pt-2 pb-6 px-5 rounded-b-[2.5rem] shadow-[0_10px_30px_-15px_rgba(0,0,0,0.05)] z-10">
+        {/* Animated Background Blob */}
+        <div className="absolute -top-24 -right-24 w-64 h-64 bg-yellow-100/40 rounded-full blur-3xl -z-10"></div>
+        
+        {/* Top Utility Bar */}
+        <div className="flex justify-between items-center mb-6">
+           <div className="flex items-center gap-2">
+              <div className="w-10 h-10 rounded-full border-2 border-white shadow-md overflow-hidden bg-gray-100">
+                  <img src={user?.avatar} className="w-full h-full object-cover" alt="avatar" />
+              </div>
+              <div className="flex flex-col">
+                 <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest leading-none mb-1">Welcome back</span>
+                 <h1 className="text-lg font-black text-gray-900 leading-none">{user?.name}</h1>
+              </div>
+           </div>
+           <div className="flex items-center gap-3">
+              <button className="relative p-2 text-gray-500 hover:text-gray-900 transition-colors">
+                 <Bell size={20} />
+                 <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+              </button>
+              <button 
+                onClick={() => onNavigate('MEMBER_CODE')}
+                className="flex items-center gap-2 bg-gray-900 text-[#FDE047] px-4 py-2 rounded-full shadow-lg shadow-gray-200 active:scale-95 transition-all"
+              >
+                <QrCode size={18} strokeWidth={2.5} />
+                <span className="text-xs font-black">会员码</span>
+              </button>
+           </div>
         </div>
 
-        {/* Banner Carousel (Simplified) */}
+        {/* Banner Carousel */}
         {banners.length > 0 && (
-          <div className="mb-6 rounded-xl overflow-hidden shadow-sm relative h-32">
-             <img src={banners[0].imageUrl} className="w-full h-full object-cover" alt={banners[0].title} />
-             <div className="absolute bottom-2 right-2 bg-black/30 text-white text-[9px] px-1.5 py-0.5 rounded-full backdrop-blur-sm">
-                1/{banners.length}
+          <div className="mb-6 group relative h-40 rounded-3xl overflow-hidden shadow-xl ring-1 ring-black/5">
+             <img src={banners[0].imageUrl} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt={banners[0].title} />
+             <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
+             <div className="absolute bottom-4 left-5">
+                <span className="bg-yellow-400 text-gray-900 text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-widest mb-1 inline-block">Trending Now</span>
+                <h2 className="text-white font-black text-lg italic tracking-tight">{banners[0].title}</h2>
              </div>
           </div>
         )}
 
         {/* Main Actions Grid */}
-        <div className="grid grid-cols-2 gap-4 px-2 mb-2">
+        <div className="grid grid-cols-4 gap-4 px-1">
           <button 
              onClick={() => onNavigate('SCAN_ORDER')} 
-             className="bg-[#FEFCE8] hover:bg-[#FEF9C3] transition-colors p-4 rounded-2xl flex items-center gap-3 shadow-sm border border-[#FEF08A] col-span-2 py-5"
+             className="col-span-4 bg-gradient-to-br from-[#FEFCE8] to-[#FDE68A] p-5 rounded-3xl flex items-center justify-between shadow-md border border-white/50 active:scale-[0.98] transition-all group"
           >
-            <div className="bg-[#FDE047] p-3 rounded-full text-gray-900">
-                <QrCode size={28} strokeWidth={2.5} />
+            <div className="flex items-center gap-4">
+              <div className="bg-white p-3.5 rounded-2xl shadow-sm text-gray-900 group-hover:rotate-12 transition-transform">
+                  <QrCode size={32} strokeWidth={2.5} />
+              </div>
+              <div className="text-left">
+                <span className="block font-black text-2xl text-gray-900 italic tracking-tighter">扫码点餐</span>
+                <span className="block text-[10px] text-yellow-800 font-bold uppercase tracking-widest opacity-60">Scan to order at table</span>
+              </div>
             </div>
-            <div className="text-left">
-              <span className="block font-bold text-xl text-gray-900">扫码点餐</span>
-              <span className="block text-[11px] text-yellow-700 font-medium">Scan QR to Order at Table</span>
+            <div className="w-10 h-10 rounded-full bg-white/40 flex items-center justify-center">
+                <ChevronRight size={20} className="text-yellow-900" />
             </div>
           </button>
 
-          <button 
-             onClick={() => onNavigate('MENU')} 
-             className="bg-white hover:bg-gray-50 transition-colors p-4 rounded-2xl flex items-center gap-3 shadow-sm border border-gray-100"
-          >
-             <div className="bg-gray-100 p-2.5 rounded-full text-gray-900">
-                 <ShoppingBag size={24} strokeWidth={2.5} />
-             </div>
-            <div className="text-left">
-              <span className="block font-bold text-lg text-gray-900">自取</span>
-              <span className="block text-[10px] text-gray-400 font-medium">Pick Up</span>
-            </div>
-          </button>
-
-          <button 
-             onClick={() => onNavigate('MENU')}
-             className="bg-white hover:bg-gray-50 transition-colors p-4 rounded-2xl flex items-center gap-3 shadow-sm border border-gray-100"
-          >
-             <div className="bg-gray-100 p-2.5 rounded-full text-gray-900">
-                 <Truck size={24} strokeWidth={2.5} />
-             </div>
-            <div className="text-left">
-              <span className="block font-bold text-lg text-gray-900">外送</span>
-              <span className="block text-[10px] text-gray-400 font-medium">Delivery</span>
-            </div>
-          </button>
-
-          <button 
-            onClick={() => onNavigate('RESERVATION')}
-            className="bg-white hover:bg-gray-50 transition-colors p-4 rounded-2xl flex items-center gap-3 shadow-sm border border-gray-100"
-          >
-             <div className="bg-gray-100 p-2.5 rounded-full text-gray-900">
-                 <Calendar size={24} strokeWidth={2.5} />
-             </div>
-            <div className="text-left">
-              <span className="block font-bold text-lg text-gray-900">自助预约</span>
-              <span className="block text-[10px] text-gray-400 font-medium">Reservation</span>
-            </div>
-          </button>
-          
-          <button 
-             onClick={() => onNavigate('MENU')} 
-             className="bg-white hover:bg-gray-50 transition-colors p-4 rounded-2xl flex items-center gap-3 shadow-sm border border-gray-100"
-          >
-            <div className="bg-gray-100 p-2.5 rounded-full text-gray-900">
-                <Store size={24} strokeWidth={2.5} />
-            </div>
-            <div className="text-left">
-              <span className="block font-bold text-lg text-gray-900">堂食</span>
-              <span className="block text-[10px] text-gray-400 font-medium">Dine In</span>
-            </div>
-          </button>
+          {[
+            { id: 'MENU', label: '自取', icon: ShoppingBag, color: 'bg-blue-50', iconColor: 'text-blue-500' },
+            { id: 'MENU', label: '外送', icon: Truck, color: 'bg-green-50', iconColor: 'text-green-500' },
+            { id: 'RESERVATION', label: '预约', icon: Calendar, color: 'bg-purple-50', iconColor: 'text-purple-500' },
+            { id: 'MENU', label: '堂食', icon: Store, color: 'bg-orange-50', iconColor: 'text-orange-500' }
+          ].map((item, idx) => (
+            <button 
+               key={idx}
+               onClick={() => onNavigate(item.id as ViewState)} 
+               className="flex flex-col items-center gap-2 group"
+            >
+               <div className={`${item.color} ${item.iconColor} p-4 rounded-2xl shadow-sm border border-white group-active:scale-90 transition-all`}>
+                   <item.icon size={24} strokeWidth={2.5} />
+               </div>
+               <span className="text-[11px] font-black text-gray-800 tracking-tight">{item.label}</span>
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Store Card */}
+      {/* Store Card Refinement */}
       {store && (
-        <div className="mx-4 mt-5 bg-white rounded-2xl overflow-hidden shadow-sm relative group cursor-pointer border border-gray-100" onClick={() => onNavigate('STORE_DETAIL')}>
-          {/* Map Background Placeholder */}
-          <div className="h-24 bg-gray-100 relative overflow-hidden">
-             <div className="absolute inset-0 opacity-30 bg-[url('https://www.transparenttextures.com/patterns/city-map.png')] grayscale"></div>
-             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
-                <MapPin className="text-gray-800 drop-shadow-md" size={28} fill="#FDE047" />
-                <div className="w-2 h-1 bg-black/20 rounded-full blur-[1px]"></div>
+        <div className="mx-5 mt-8 bg-white rounded-[2rem] overflow-hidden shadow-[0_15px_40px_-15px_rgba(0,0,0,0.08)] border border-gray-100 group" onClick={() => onNavigate('STORE_DETAIL')}>
+          <div className="h-28 relative overflow-hidden">
+             <img src={store.image} className="w-full h-full object-cover blur-[1px] opacity-40 grayscale" />
+             <div className="absolute inset-0 bg-gradient-to-b from-transparent to-white"></div>
+             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-10">
+                <div className="bg-white p-2 rounded-full shadow-lg border-2 border-yellow-400">
+                    <MapPin className="text-gray-900" size={24} fill="#FDE047" />
+                </div>
              </div>
-             
-             {/* Status Badge */}
-             <div className="absolute top-3 right-3 bg-white/90 backdrop-blur text-green-600 text-[10px] font-bold px-2 py-1 rounded-md shadow-sm border border-green-100 flex items-center gap-1">
-                <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
-                {store.status === 'OPEN' ? '营业中' : '休息中'}
+             <div className="absolute top-4 right-4 bg-white/80 backdrop-blur px-3 py-1 rounded-full text-[10px] font-black text-green-600 shadow-sm border border-green-100 uppercase tracking-widest">
+                Open Now
              </div>
           </div>
 
-          <div className="p-4">
-             <div className="flex justify-between items-start mb-3">
-               <div>
-                 <h3 className="font-bold text-lg text-gray-900">{store.name}</h3>
-                 <div className="flex items-center gap-2 mt-1">
-                     <span className="text-xs text-gray-500 flex items-center gap-0.5">
-                        <MapPin size={12} /> {store.distance}
-                     </span>
-                     <div className="w-[1px] h-2.5 bg-gray-200"></div>
-                     <span className="text-xs text-gray-500">{store.address}</span>
-                 </div>
-               </div>
-             </div>
+          <div className="px-6 pb-6 text-center">
+             <h3 className="font-black text-xl text-gray-900 tracking-tight mb-1">{store.name}</h3>
+             <p className="text-[11px] text-gray-400 font-bold uppercase tracking-[0.2em] mb-5">High quality bakery & drinks</p>
              
-             <div className="flex gap-2 border-t border-gray-50 pt-3">
-                <button 
-                   onClick={(e) => { e.stopPropagation(); /* Call Logic */ }}
-                   className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-gray-50 text-xs font-bold text-gray-700 hover:bg-gray-100"
-                >
-                   <Phone size={14} /> 联系门店
-                </button>
-                <button 
-                   onClick={(e) => { e.stopPropagation(); /* Nav Logic */ }}
-                   className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-gray-50 text-xs font-bold text-gray-700 hover:bg-gray-100"
-                >
-                   <Navigation size={14} /> 导航前往
+             <div className="flex gap-3">
+                <button className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl bg-gray-50 text-xs font-black text-gray-700 hover:bg-gray-100 active:scale-95 transition-all">
+                   <Phone size={14} /> 联系
                 </button>
                 <button 
                    onClick={(e) => { e.stopPropagation(); onNavigate('MENU'); }} 
-                   className="flex-[1.5] bg-[#FDE047] text-gray-900 py-2 rounded-lg text-xs font-bold shadow-sm hover:bg-yellow-400 transition-colors flex items-center justify-center gap-1"
+                   className="flex-[2] bg-gray-900 text-[#FDE047] py-3 rounded-2xl text-xs font-black shadow-lg shadow-gray-200 hover:bg-black active:scale-[0.98] transition-all flex items-center justify-center gap-2"
                 >
-                   去点单 <ChevronRight size={14} />
+                   立即点单 <ChevronRight size={14} strokeWidth={3} />
                 </button>
              </div>
           </div>
         </div>
       )}
 
-      {/* Recommendation Feed */}
-      <div className="mt-6 px-4">
-         <div className="flex items-center justify-between mb-3">
-             <h3 className="font-bold text-lg text-gray-900">今日推荐</h3>
-             <span className="text-xs text-gray-400">查看更多</span>
+      {/* Refined Recommendations */}
+      <div className="mt-10 px-6">
+         <div className="flex items-center justify-between mb-5">
+             <div>
+                <h3 className="font-black text-xl text-gray-900 tracking-tight leading-none mb-1">今日推荐</h3>
+                <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Today's special picks</span>
+             </div>
+             <button className="text-xs font-black text-gray-400 hover:text-gray-900 flex items-center gap-1 transition-colors uppercase tracking-widest">
+                All <ChevronRight size={12} strokeWidth={3} />
+             </button>
          </div>
          
-         <div className="flex gap-4 overflow-x-auto no-scrollbar pb-4">
+         <div className="flex gap-5 overflow-x-auto no-scrollbar pb-8">
              {recommendProducts.map(product => (
-                 <div key={product.id} className="min-w-[140px] w-[140px] bg-white rounded-xl p-2 shadow-sm flex flex-col" onClick={() => onNavigate('MENU')}>
-                     <div className="w-full aspect-square rounded-lg bg-gray-100 mb-2 overflow-hidden">
+                 <div key={product.id} className="min-w-[160px] bg-white rounded-3xl p-3 shadow-sm border border-gray-100 flex flex-col active:scale-95 transition-all" onClick={() => onNavigate('MENU')}>
+                     <div className="w-full aspect-square rounded-2xl bg-gray-50 mb-3 overflow-hidden shadow-inner">
                          <img src={product.image} className="w-full h-full object-cover" alt={product.name} />
                      </div>
-                     <div className="font-bold text-gray-900 text-xs line-clamp-1 mb-1">{product.name}</div>
-                     <div className="flex justify-between items-center mt-auto">
-                         <span className="text-sm font-bold text-gray-900">¥{product.price}</span>
-                         <button className="w-5 h-5 bg-[#FDE047] rounded-full flex items-center justify-center text-gray-900">
-                             <ShoppingBag size={10} />
-                         </button>
+                     <div className="px-1">
+                        <div className="font-black text-gray-900 text-sm line-clamp-1 mb-1 italic">{product.name}</div>
+                        <div className="flex justify-between items-center mt-2">
+                            <span className="text-base font-black text-gray-900">¥{product.price}</span>
+                            <button className="w-8 h-8 bg-[#FDE047] rounded-xl flex items-center justify-center text-gray-900 shadow-sm shadow-yellow-200 active:scale-90 transition-all">
+                                <Plus size={16} strokeWidth={3} />
+                            </button>
+                        </div>
                      </div>
                  </div>
              ))}
          </div>
       </div>
-      
-      <div className="h-8"></div>
     </div>
   );
 };

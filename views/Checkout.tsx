@@ -1,6 +1,6 @@
 
-import React, { useState, useEffect } from 'react';
-import { ChevronRight, MoreHorizontal, Check, Wallet, X, Info } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { ChevronRight, MoreHorizontal, Check, Wallet, X, Info, Ticket } from 'lucide-react';
 import { CartItem, Coupon, User } from '../types';
 import { api } from '../services/api';
 import { Header } from '../components/Header';
@@ -28,26 +28,33 @@ export const CheckoutView: React.FC<CheckoutProps> = ({
   const [createdOrderId, setCreatedOrderId] = useState<string>('');
   const [user, setUser] = useState<User | null>(null);
   
-  // Coupon state
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [selectedCoupon, setSelectedCoupon] = useState<Coupon | null>(null);
   const [showCouponModal, setShowCouponModal] = useState(false);
 
   useEffect(() => {
     api.getUserProfile().then(setUser);
-    api.getCoupons().then(setCoupons);
-  }, []);
+    api.getCoupons().then(data => {
+        setCoupons(data);
+        // Auto-select best coupon
+        const valid = data.filter(c => c.minSpend <= cartTotal);
+        if (valid.length > 0) {
+            const best = valid.reduce((prev, current) => (prev.amount > current.amount) ? prev : current);
+            setSelectedCoupon(best);
+        }
+    });
+  }, [cartTotal]);
 
-  // Calculate discount
   const discountAmount = selectedCoupon ? selectedCoupon.amount : 0;
   const finalTotal = Math.max(0, cartTotal - discountAmount);
-  // Delivery fee logic (simplified for demo)
-  const deliveryFee = diningMode === 'delivery' ? 0 : 0;
+  const deliveryFee = diningMode === 'delivery' ? 0 : 0; // Simple demo logic
   const grandTotal = finalTotal + deliveryFee;
+
+  const validCoupons = useMemo(() => coupons.filter(c => c.minSpend <= cartTotal), [coupons, cartTotal]);
+  const invalidCoupons = useMemo(() => coupons.filter(c => c.minSpend > cartTotal), [coupons, cartTotal]);
 
   const handlePay = async () => {
       setIsPaymentProcessing(true);
-      // Simulate network request to create and pay order
       const { orderId } = await api.createOrder({ 
           storeId: 1, 
           items: cart, 
@@ -65,16 +72,10 @@ export const CheckoutView: React.FC<CheckoutProps> = ({
       if (onViewOrder && createdOrderId) {
           onViewOrder(createdOrderId);
       } else {
-          // Fallback
           onBack(); 
       }
   };
 
-  // Valid coupons for current cart
-  const validCoupons = coupons.filter(c => c.minSpend <= cartTotal);
-  const invalidCoupons = coupons.filter(c => c.minSpend > cartTotal);
-
-  // Mode specific render content
   const renderHeaderContent = () => {
       if (tableNo) {
           return (
@@ -103,7 +104,7 @@ export const CheckoutView: React.FC<CheckoutProps> = ({
                  <div className="flex items-center justify-between mt-4 border-t border-gray-50 pt-3">
                      <span className="text-sm font-bold text-gray-700">联系电话</span>
                      <div className="w-32">
-                         <input type="tel" placeholder="请输入手机号" className="w-full text-right bg-gray-50 rounded px-2 py-1 text-sm outline-none focus:ring-1 focus:ring-yellow-400" />
+                         <input type="tel" defaultValue={user?.phone} placeholder="请输入手机号" className="w-full text-right bg-gray-50 rounded px-2 py-1 text-sm outline-none focus:ring-1 focus:ring-yellow-400" />
                      </div>
                  </div>
                  <div className="flex items-center justify-between mt-3">
@@ -130,7 +131,6 @@ export const CheckoutView: React.FC<CheckoutProps> = ({
                    </div>
                    <ChevronRight size={16} className="text-gray-300" />
                </div>
-               
                <div className="bg-white rounded-xl p-4 mb-3 shadow-sm">
                   <div className="flex justify-between items-center">
                       <span className="font-bold text-gray-900 text-sm">送达时间</span>
@@ -139,7 +139,7 @@ export const CheckoutView: React.FC<CheckoutProps> = ({
                </div>
             </>
           );
-      } else { // Pickup
+      } else {
            return (
               <div className="bg-white rounded-xl p-4 mb-3 shadow-sm">
                  <h3 className="font-bold text-lg text-gray-900">棠小一 (科技园店)</h3>
@@ -170,7 +170,6 @@ export const CheckoutView: React.FC<CheckoutProps> = ({
       />
 
       <div className="flex-1 overflow-y-auto pb-32">
-          {/* Dining Mode Toggle */}
           <div className="px-4 pt-4">
             {!tableNo && (
               <div className="bg-white p-1.5 rounded-full flex mb-4 shadow-sm">
@@ -202,7 +201,6 @@ export const CheckoutView: React.FC<CheckoutProps> = ({
                           <div className="flex justify-between items-end mt-1">
                               <div className="flex flex-col">
                                 <span className="text-xs text-gray-400">默认规格</span>
-                                {/* Collection Tag */}
                                 <div className="mt-1">
                                     <span className="bg-[#F97316] text-white text-[9px] px-1 py-0.5 rounded-[2px]">集</span>
                                 </div>
@@ -221,21 +219,28 @@ export const CheckoutView: React.FC<CheckoutProps> = ({
 
                 {/* Coupon Selector Trigger */}
                 <div 
-                    className="flex justify-between items-center py-3 border-t border-dashed border-gray-100 cursor-pointer active:opacity-60"
+                    className={`flex justify-between items-center py-3 border-t border-dashed border-gray-100 cursor-pointer active:opacity-60 group`}
                     onClick={() => setShowCouponModal(true)}
                 >
-                  <span className="text-sm text-gray-600">使用券</span>
+                  <div className="flex items-center gap-2">
+                    <Ticket size={16} className={selectedCoupon ? "text-[#D97706]" : "text-gray-400"} />
+                    <span className="text-sm text-gray-600">使用券</span>
+                  </div>
                   <div className="flex items-center text-sm cursor-pointer">
                       {selectedCoupon ? (
-                          <span className="text-[#D97706] font-bold mr-1">-¥{selectedCoupon.amount}</span>
+                          <div className="flex items-center gap-1.5 bg-yellow-50 px-2 py-1 rounded-lg border border-yellow-100">
+                             <span className="text-[#D97706] font-bold">-¥{selectedCoupon.amount}</span>
+                             <span className="text-[10px] text-yellow-600 font-bold uppercase">{selectedCoupon.name}</span>
+                          </div>
                       ) : (
-                          <span className="text-gray-400 mr-1">{validCoupons.length > 0 ? `${validCoupons.length}张可用` : '无可用券'}</span>
+                          <span className={`${validCoupons.length > 0 ? 'text-[#D97706] font-bold' : 'text-gray-400'} mr-1`}>
+                            {validCoupons.length > 0 ? `${validCoupons.length}张可用` : '无可用券'}
+                          </span>
                       )}
-                      <ChevronRight size={14} className="text-gray-400" />
+                      <ChevronRight size={14} className="text-gray-400 group-hover:translate-x-0.5 transition-transform" />
                   </div>
                 </div>
 
-                {/* Fee breakdown based on mode */}
                 {diningMode === 'delivery' && (
                    <div className="flex justify-between items-center py-3 border-t border-dashed border-gray-100">
                       <span className="text-sm text-gray-600">配送费</span>
@@ -244,7 +249,7 @@ export const CheckoutView: React.FC<CheckoutProps> = ({
                 )}
 
                 <div className="flex justify-end pt-4 border-t border-gray-50 items-baseline gap-2">
-                  <span className="text-xs text-gray-500">已优惠 ¥{discountAmount.toFixed(2)}</span>
+                  {discountAmount > 0 && <span className="text-xs text-[#D97706] font-bold bg-yellow-50 px-2 py-0.5 rounded">已优惠 ¥{discountAmount.toFixed(2)}</span>}
                   <span className="text-sm text-gray-900 font-medium">小计</span>
                   <span className="font-bold text-xl text-gray-900">¥{grandTotal.toFixed(2)}</span>
                 </div>
@@ -255,7 +260,7 @@ export const CheckoutView: React.FC<CheckoutProps> = ({
                 <div className="flex justify-between items-center mb-3">
                     <h4 className="font-bold text-sm text-gray-900">充值更划算</h4>
                 </div>
-                <div className="border border-[#FDE047] bg-[#FEFCE8] rounded-lg p-4 w-32 text-center relative overflow-hidden">
+                <div className="border border-[#FDE047] bg-[#FEFCE8] rounded-lg p-4 w-32 text-center relative overflow-hidden active:scale-95 transition-transform">
                     <div className="absolute top-0 left-0 bg-[#FDE047] text-[9px] font-bold px-1.5 py-0.5 rounded-br-lg">免单</div>
                     <div className="font-bold text-lg text-gray-900 mt-1">7335元</div>
                     <div className="text-[10px] text-gray-500">充值3倍</div>
@@ -265,8 +270,6 @@ export const CheckoutView: React.FC<CheckoutProps> = ({
             {/* Payment Methods */}
             <div className="bg-white rounded-xl p-4 shadow-sm mb-4">
                 <h4 className="font-bold text-sm text-gray-900 mb-3">支付方式</h4>
-                
-                {/* WeChat Pay */}
                 <div 
                   className="flex items-center justify-between py-3 border-b border-gray-50 cursor-pointer group"
                   onClick={() => setPaymentMethod('wechat')}
@@ -283,8 +286,6 @@ export const CheckoutView: React.FC<CheckoutProps> = ({
                       {paymentMethod === 'wechat' && <Check size={12} className="text-white" strokeWidth={3} />}
                    </div>
                 </div>
-
-                {/* Balance Pay */}
                 <div 
                    className="flex items-center justify-between py-3 cursor-pointer group"
                    onClick={() => setPaymentMethod('balance')}
@@ -321,50 +322,56 @@ export const CheckoutView: React.FC<CheckoutProps> = ({
                  </button>
               </div>
               
-              <div className="p-4 overflow-y-auto flex-1 space-y-3">
+              <div className="p-4 overflow-y-auto flex-1 space-y-4">
                   <div 
                      onClick={() => { setSelectedCoupon(null); setShowCouponModal(false); }}
-                     className={`p-4 rounded-xl border-2 cursor-pointer bg-white flex justify-between items-center ${selectedCoupon === null ? 'border-[#FDE047]' : 'border-transparent'}`}
+                     className={`p-4 rounded-xl border-2 cursor-pointer bg-white flex justify-between items-center transition-all ${selectedCoupon === null ? 'border-[#FDE047] bg-[#FEFCE8]' : 'border-transparent'}`}
                   >
                       <span className="text-sm font-bold text-gray-900">不使用优惠券</span>
                       {selectedCoupon === null && <Check size={16} className="text-[#CA8A04]" />}
                   </div>
 
-                  {/* Valid Coupons */}
-                  {validCoupons.map(coupon => (
-                      <div 
-                         key={coupon.id}
-                         onClick={() => { setSelectedCoupon(coupon); setShowCouponModal(false); }}
-                         className={`relative bg-white rounded-xl overflow-hidden flex cursor-pointer border-2 transition-colors ${selectedCoupon?.id === coupon.id ? 'border-[#FDE047]' : 'border-transparent'}`}
-                      >
-                          <div className="w-24 bg-[#FFFBEB] flex flex-col items-center justify-center p-2 border-r border-dashed border-gray-200">
-                              <div className="flex items-baseline text-[#D97706]">
-                                  <span className="text-xs">¥</span>
-                                  <span className="text-2xl font-bold">{coupon.amount}</span>
+                  {validCoupons.length > 0 && (
+                      <div className="space-y-3">
+                          <div className="text-[10px] text-gray-400 font-bold uppercase tracking-widest pl-1">可用优惠券 ({validCoupons.length})</div>
+                          {validCoupons.map(coupon => (
+                              <div 
+                                 key={coupon.id}
+                                 onClick={() => { setSelectedCoupon(coupon); setShowCouponModal(false); }}
+                                 className={`relative bg-white rounded-xl overflow-hidden flex cursor-pointer border-2 transition-all active:scale-[0.98] ${selectedCoupon?.id === coupon.id ? 'border-[#FDE047] shadow-md' : 'border-transparent shadow-sm'}`}
+                              >
+                                  <div className="w-24 bg-[#FFFBEB] flex flex-col items-center justify-center p-2 border-r border-dashed border-gray-200">
+                                      <div className="flex items-baseline text-[#D97706]">
+                                          <span className="text-xs">¥</span>
+                                          <span className="text-2xl font-bold">{coupon.amount}</span>
+                                      </div>
+                                      <div className="text-[10px] text-[#D97706] font-bold">满{coupon.minSpend}用</div>
+                                  </div>
+                                  <div className="flex-1 p-3 flex flex-col justify-center">
+                                      <h4 className="font-bold text-gray-900 text-sm mb-1">{coupon.name}</h4>
+                                      <div className="flex items-center gap-1.5">
+                                         <span className="text-[9px] text-gray-400">{coupon.expireDate} 到期</span>
+                                         {selectedCoupon?.id === coupon.id && <span className="bg-green-100 text-green-600 text-[8px] px-1 rounded font-bold">已选</span>}
+                                      </div>
+                                  </div>
+                                  {selectedCoupon?.id === coupon.id && (
+                                      <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[#CA8A04] animate-in zoom-in">
+                                          <Check size={20} strokeWidth={3} />
+                                      </div>
+                                  )}
                               </div>
-                              <div className="text-[10px] text-[#D97706]">满{coupon.minSpend}可用</div>
-                          </div>
-                          <div className="flex-1 p-3 flex flex-col justify-center">
-                              <h4 className="font-bold text-gray-900 text-sm mb-1">{coupon.name}</h4>
-                              <p className="text-[10px] text-gray-400">{coupon.expireDate} 到期</p>
-                          </div>
-                          {selectedCoupon?.id === coupon.id && (
-                              <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[#CA8A04]">
-                                  <Check size={20} />
-                              </div>
-                          )}
+                          ))}
                       </div>
-                  ))}
+                  )}
 
-                  {/* Invalid Coupons */}
                   {invalidCoupons.length > 0 && (
-                      <div className="pt-4">
-                          <div className="text-xs text-gray-400 mb-3 text-center">不可用优惠券</div>
+                      <div className="pt-4 space-y-3">
+                          <div className="text-[10px] text-gray-400 font-bold uppercase tracking-widest pl-1">不可用优惠券 ({invalidCoupons.length})</div>
                           <div className="space-y-3 opacity-60 grayscale">
                               {invalidCoupons.map(coupon => (
-                                  <div key={coupon.id} className="bg-white rounded-xl overflow-hidden flex">
+                                  <div key={coupon.id} className="bg-white rounded-xl overflow-hidden flex shadow-sm">
                                       <div className="w-24 bg-gray-100 flex flex-col items-center justify-center p-2 border-r border-dashed border-gray-200">
-                                          <div className="flex items-baseline text-gray-500">
+                                          <div className="flex items-baseline text-gray-400">
                                               <span className="text-xs">¥</span>
                                               <span className="text-2xl font-bold">{coupon.amount}</span>
                                           </div>
@@ -372,7 +379,7 @@ export const CheckoutView: React.FC<CheckoutProps> = ({
                                       </div>
                                       <div className="flex-1 p-3 flex flex-col justify-center">
                                           <h4 className="font-bold text-gray-900 text-sm mb-1">{coupon.name}</h4>
-                                          <p className="text-[10px] text-gray-400">差 ¥{(coupon.minSpend - cartTotal).toFixed(2)} 可用</p>
+                                          <p className="text-[10px] text-red-400 font-medium">差 ¥{(coupon.minSpend - cartTotal).toFixed(2)} 可使用</p>
                                       </div>
                                   </div>
                               ))}
@@ -395,7 +402,6 @@ export const CheckoutView: React.FC<CheckoutProps> = ({
                       <h3 className="text-xl font-bold text-gray-900">支付成功</h3>
                       <p className="text-green-700 text-xs mt-1">商家已接单，正在制作中</p>
                   </div>
-                  
                   <div className="p-6 space-y-4">
                       <div className="flex justify-between items-center py-2 border-b border-gray-50">
                           <span className="text-sm text-gray-500">支付金额</span>
@@ -405,51 +411,21 @@ export const CheckoutView: React.FC<CheckoutProps> = ({
                           <span className="text-xs text-gray-500">下单门店</span>
                           <span className="text-xs text-gray-700 font-medium">棠小一 (科技园店)</span>
                       </div>
-                      {tableNo && (
-                        <div className="flex justify-between items-center py-1">
-                            <span className="text-xs text-gray-500">用餐桌号</span>
-                            <span className="text-xs text-gray-700 font-bold">{tableNo}</span>
-                        </div>
-                      )}
-                      <div className="flex justify-between items-center py-1">
-                          <span className="text-xs text-gray-500">商品详情</span>
-                          <span className="text-xs text-gray-700">共 {cart.reduce((a,b) => a + b.quantity, 0)} 件商品</span>
-                      </div>
                       <div className="flex justify-between items-center py-1">
                           <span className="text-xs text-gray-500">订单编号</span>
                           <span className="text-xs font-mono text-gray-700">{createdOrderId || 'OD28371029'}</span>
                       </div>
-                      <div className="flex justify-between items-center py-1">
-                          <span className="text-xs text-gray-500">支付方式</span>
-                          <span className="text-xs text-gray-700">{paymentMethod === 'wechat' ? '微信支付' : '余额支付'}</span>
-                      </div>
-                      <div className="flex justify-between items-center py-1">
-                          <span className="text-xs text-gray-500">下单时间</span>
-                          <span className="text-xs text-gray-700">{new Date().toLocaleString('zh-CN', {hour12:false})}</span>
-                      </div>
                   </div>
-
                   <div className="p-6 pt-0">
                       <div className="flex gap-3">
-                        <button 
-                            onClick={handleFinish}
-                            className="flex-1 bg-gray-100 text-gray-900 font-bold py-3.5 rounded-xl transition-colors shadow-sm"
-                        >
-                            返回
-                        </button>
-                        <button 
-                            onClick={handleFinish}
-                            className="flex-[2] bg-[#FDE047] text-gray-900 font-bold py-3.5 rounded-xl hover:bg-yellow-400 transition-colors shadow-sm"
-                        >
-                            查看订单
-                        </button>
+                        <button onClick={handleFinish} className="flex-1 bg-gray-100 text-gray-900 font-bold py-3.5 rounded-xl transition-colors shadow-sm">返回</button>
+                        <button onClick={handleFinish} className="flex-[2] bg-[#FDE047] text-gray-900 font-bold py-3.5 rounded-xl hover:bg-yellow-400 transition-colors shadow-sm">查看订单</button>
                       </div>
                   </div>
               </div>
           </div>
       )}
 
-      {/* Footer Payment Bar */}
       <div className="fixed bottom-0 left-0 right-0 bg-white p-4 border-t border-gray-100 flex items-center justify-between pb-safe max-w-md mx-auto z-40">
           <div className="flex flex-col">
               <span className="text-xs text-gray-400">应付合计</span>

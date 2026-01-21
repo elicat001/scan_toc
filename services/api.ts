@@ -45,7 +45,7 @@ let MOCK_USER: User = {
   avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix',
   points: 19,
   balance: 0.00,
-  coupons: 2,
+  coupons: 3,
   memberCode: '882910',
   isVip: false,
   gender: 0,
@@ -56,7 +56,6 @@ const MOCK_BANNERS: Banner[] = [
   { id: 2, imageUrl: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=800&h=400&fit=crop', title: 'New Arrivals' }
 ];
 
-// Fixed error on line 58: Import 'Store' from types.ts
 const MOCK_STORES: Store[] = [
   {
     id: 1,
@@ -108,6 +107,12 @@ let MOCK_ORDERS: Order[] = [
   }
 ];
 
+const MOCK_COUPONS: Coupon[] = [
+  { id: 1, name: '新人专享满减券', amount: 5, minSpend: 20, type: 'CASH', expireDate: '2025-12-31' },
+  { id: 2, name: '午餐特惠减免卷', amount: 10, minSpend: 50, type: 'CASH', expireDate: '2025-12-31' },
+  { id: 3, name: '大额超值满减券', amount: 20, minSpend: 100, type: 'CASH', expireDate: '2025-12-31' },
+];
+
 // --- API Implementation ---
 
 export const api = {
@@ -121,12 +126,10 @@ export const api = {
     return MOCK_USER;
   },
 
-  // Fixed error on line 122: Use imported 'Store' type
   getStores: async (): Promise<Store[]> => {
     return MOCK_STORES;
   },
 
-  // Fixed error on line 126: Use imported 'Store' type
   getStoreInfo: async (id: number = 1): Promise<Store> => {
     return MOCK_STORES[0];
   },
@@ -186,5 +189,8 @@ export const api = {
   addAddress: async (data: any): Promise<Address> => { return {} as any; },
   getBanners: async (): Promise<Banner[]> => { return MOCK_BANNERS; },
   getPointsHistory: async (): Promise<PointRecord[]> => { return []; },
-  getCoupons: async (): Promise<Coupon[]> => { return []; }
+  getCoupons: async (): Promise<Coupon[]> => { 
+    await new Promise(r => setTimeout(r, 400));
+    return MOCK_COUPONS; 
+  }
 };

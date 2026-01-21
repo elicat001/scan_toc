@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { Phone, ChefHat, Bike, CheckCircle, Package, Timer, ChevronRight, Copy, Share2, Info, MapPin, Coffee, Search } from 'lucide-react';
+import { Phone, ChefHat, Bike, CheckCircle, Package, Timer, ChevronRight, Copy, Share2, Info, MapPin, Coffee, Search, Loader2 } from 'lucide-react';
 import { Order, OrderStatus } from '../types';
 import { Header } from '../components/Header';
 
@@ -15,6 +15,7 @@ export const OrderDetailView: React.FC<OrderDetailProps> = ({ order: initialOrde
   const [countdown, setCountdown] = useState(900);
   const [isLoaded, setIsLoaded] = useState(false);
   const [showQueueNo, setShowQueueNo] = useState(false);
+  const [simulationProgress, setSimulationProgress] = useState(35); // Initial progress for demo
 
   // Status-based polling/simulation effect
   useEffect(() => {
@@ -24,15 +25,28 @@ export const OrderDetailView: React.FC<OrderDetailProps> = ({ order: initialOrde
     const queueTimer = setTimeout(() => setShowQueueNo(true), 800);
 
     let timer: number | undefined;
+    let simulationTimer: number | undefined;
+
     if (order.status === OrderStatus.PENDING) {
       timer = window.setInterval(() => {
         setCountdown((prev) => (prev > 0 ? prev - 1 : 0));
       }, 1000);
     }
 
+    // Progress simulation for Preparing and Delivering
+    if (order.status === OrderStatus.PREPARING || order.status === OrderStatus.DELIVERING) {
+        simulationTimer = window.setInterval(() => {
+            setSimulationProgress(prev => {
+                if (prev >= 98) return 98; // Stay near 100 but don't finish automatically
+                return prev + (Math.random() * 0.5);
+            });
+        }, 1000);
+    }
+
     return () => {
       clearTimeout(queueTimer);
       if (timer) clearInterval(timer);
+      if (simulationTimer) clearInterval(simulationTimer);
     };
   }, [order.status]);
 
@@ -53,22 +67,48 @@ export const OrderDetailView: React.FC<OrderDetailProps> = ({ order: initialOrde
     }
   }, [order.status]);
 
+  const preparingStepText = useMemo(() => {
+      if (simulationProgress < 30) return "主厨正在备餐";
+      if (simulationProgress < 60) return "正在恒温制作";
+      if (simulationProgress < 85) return "正在进行装盘";
+      return "正在打包中";
+  }, [simulationProgress]);
+
   const renderStatusSimulation = () => {
     if (order.status === OrderStatus.PREPARING) {
       return (
         <div className="mt-8 px-2 flex flex-col items-center animate-in fade-in slide-in-from-bottom-2">
-            <div className="relative w-full h-12 flex items-center justify-center mb-4">
-                <div className="absolute inset-x-0 h-1 bg-white/20 rounded-full overflow-hidden">
-                    <div className="h-full bg-white/60 w-3/4 rounded-full relative">
-                        <div className="absolute top-0 right-0 bottom-0 w-8 bg-gradient-to-r from-transparent to-white animate-shimmer"></div>
+            <div className="relative w-full h-12 flex items-center justify-center mb-4 px-2">
+                {/* Track */}
+                <div className="absolute inset-x-0 h-1.5 bg-white/20 rounded-full overflow-hidden">
+                    {/* Animated Progress */}
+                    <div 
+                        className="h-full bg-white/70 rounded-full relative transition-all duration-1000 ease-linear shadow-[0_0_10px_rgba(255,255,255,0.5)]"
+                        style={{ width: `${simulationProgress}%` }}
+                    >
+                        <div className="absolute top-0 right-0 bottom-0 w-12 bg-gradient-to-r from-transparent to-white animate-shimmer"></div>
                     </div>
                 </div>
-                <div className="absolute left-[70%] -translate-y-6 transition-all duration-1000 flex flex-col items-center">
-                    <div className="bg-white p-2 rounded-full shadow-lg mb-1 animate-bounce">
-                        <ChefHat size={18} className="text-[#1D4ED8]" />
+                {/* Moving Chef Indicator */}
+                <div 
+                    className="absolute -translate-y-7 transition-all duration-1000 ease-linear flex flex-col items-center"
+                    style={{ left: `${Math.min(92, Math.max(8, simulationProgress))}%` }}
+                >
+                    <div className="bg-white p-2.5 rounded-full shadow-xl mb-1.5 animate-bounce-slow">
+                        <ChefHat size={20} className="text-[#1D4ED8]" />
                     </div>
-                    <span className="text-[10px] font-bold bg-white/20 px-1.5 py-0.5 rounded text-white backdrop-blur-sm">正在精心制作中</span>
+                    <div className="whitespace-nowrap flex flex-col items-center">
+                        <span className="text-[11px] font-black bg-white text-[#1D4ED8] px-2 py-0.5 rounded-full shadow-sm mb-1">{preparingStepText}</span>
+                        <span className="text-[9px] font-bold text-white/60 uppercase tracking-widest">{Math.round(simulationProgress)}%</span>
+                    </div>
                 </div>
+            </div>
+            
+            {/* Step Milestones */}
+            <div className="w-full flex justify-between px-2 mt-4 text-[9px] font-black uppercase tracking-widest text-white/40">
+                <span className={simulationProgress >= 10 ? 'text-white' : ''}>备餐</span>
+                <span className={simulationProgress >= 50 ? 'text-white' : ''}>制作</span>
+                <span className={simulationProgress >= 80 ? 'text-white' : ''}>打包</span>
             </div>
         </div>
       );
@@ -77,36 +117,60 @@ export const OrderDetailView: React.FC<OrderDetailProps> = ({ order: initialOrde
     if (order.status === OrderStatus.DELIVERING) {
       return (
         <div className="mt-8 px-2 animate-in fade-in slide-in-from-bottom-2">
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 relative overflow-hidden">
-                <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center">
-                            <Bike size={18} className="text-[#15803D]" />
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/20 relative overflow-hidden shadow-inner">
+                <div className="flex items-center justify-between mb-5">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-lg border-2 border-[#15803D]/20">
+                            <Bike size={22} className="text-[#15803D] animate-wiggle" />
                         </div>
                         <div>
-                            <div className="text-[10px] font-black uppercase opacity-60">配送骑手</div>
-                            <div className="text-xs font-bold">李师傅 (138****8888)</div>
+                            <div className="text-[10px] font-black uppercase tracking-tighter opacity-50 mb-0.5">配送骑手</div>
+                            <div className="text-sm font-black">李师傅 (138****8888)</div>
                         </div>
                     </div>
                     <div className="text-right">
-                        <div className="text-[10px] font-black uppercase opacity-60">预计送达</div>
-                        <div className="text-xs font-bold">12:45</div>
+                        <div className="text-[10px] font-black uppercase tracking-tighter opacity-50 mb-0.5">预计送达</div>
+                        <div className="text-sm font-black text-[#FDE047]">12:45</div>
                     </div>
                 </div>
-                {/* Map Simulation */}
-                <div className="h-1 bg-white/10 rounded-full relative mb-1">
-                    <div className="absolute left-0 top-0 bottom-0 bg-[#FDE047] w-1/2 rounded-full"></div>
-                    <div className="absolute left-1/2 -top-1.5 -translate-x-1/2 w-4 h-4 bg-white rounded-full border-2 border-[#15803D] shadow-sm flex items-center justify-center animate-pulse">
-                        <div className="w-1.5 h-1.5 bg-[#15803D] rounded-full"></div>
+
+                {/* Map Simulation Path */}
+                <div className="relative h-2.5 mb-2 px-1">
+                    {/* Path Track */}
+                    <div className="absolute inset-x-0 h-1 top-1/2 -translate-y-1/2 bg-white/10 rounded-full"></div>
+                    
+                    {/* Traveled Path */}
+                    <div 
+                        className="absolute left-0 h-1 top-1/2 -translate-y-1/2 bg-[#FDE047] rounded-full transition-all duration-1000 ease-linear shadow-[0_0_8px_rgba(253,224,71,0.6)]"
+                        style={{ width: `${simulationProgress}%` }}
+                    ></div>
+                    
+                    {/* Start Marker */}
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-2 h-2 bg-white rounded-full border border-gray-300"></div>
+                    
+                    {/* Moving Bike Marker */}
+                    <div 
+                        className="absolute top-1/2 -translate-y-1/2 transition-all duration-1000 ease-linear z-10"
+                        style={{ left: `${simulationProgress}%` }}
+                    >
+                        <div className="w-6 h-6 -ml-3 bg-white rounded-full border-2 border-[#15803D] shadow-2xl flex items-center justify-center animate-pulse">
+                            <div className="w-2 h-2 bg-[#15803D] rounded-full"></div>
+                        </div>
+                        <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-[#15803D] text-white text-[8px] px-1.5 py-0.5 rounded whitespace-nowrap font-black shadow-sm">
+                            距离 1.2km
+                        </div>
                     </div>
-                    <div className="absolute right-0 -top-1.5 w-4 h-4 bg-white/20 rounded-full flex items-center justify-center">
+                    
+                    {/* End Marker */}
+                    <div className="absolute right-0 top-1/2 -translate-y-1/2 w-5 h-5 bg-white/20 rounded-full border-2 border-dashed border-white/40 flex items-center justify-center">
                         <MapPin size={10} className="text-white" />
                     </div>
                 </div>
-                <div className="flex justify-between text-[8px] font-bold opacity-40 uppercase tracking-widest">
-                    <span>店面</span>
-                    <span>配送中</span>
-                    <span>目的地</span>
+
+                <div className="flex justify-between text-[8px] font-black opacity-30 uppercase tracking-[0.2em] mt-4">
+                    <span>棠小一</span>
+                    <span>正在飞奔中</span>
+                    <span>您的位置</span>
                 </div>
             </div>
         </div>
@@ -116,14 +180,14 @@ export const OrderDetailView: React.FC<OrderDetailProps> = ({ order: initialOrde
     if (order.status === OrderStatus.PAID) {
       return (
         <div className="mt-8 px-2 flex flex-col items-center">
-           <div className="w-full h-1 bg-white/20 rounded-full relative overflow-hidden">
-              <div className="absolute inset-y-0 left-0 w-1/4 bg-white rounded-full">
-                <div className="absolute top-0 right-0 bottom-0 w-8 bg-gradient-to-r from-transparent to-white/50 animate-shimmer"></div>
+           <div className="w-full h-1.5 bg-white/10 rounded-full relative overflow-hidden">
+              <div className="absolute inset-y-0 left-0 w-1/3 bg-white rounded-full animate-progress-flow">
+                <div className="absolute top-0 right-0 bottom-0 w-12 bg-gradient-to-r from-transparent to-white/50 animate-shimmer"></div>
               </div>
            </div>
-           <p className="text-[10px] font-black mt-3 opacity-60 uppercase tracking-widest flex items-center gap-2">
-              <Search size={10} /> 正在为您寻找最优派单路径...
-           </p>
+           <div className="flex items-center gap-2 mt-4 text-[10px] font-black text-white/60 uppercase tracking-widest animate-pulse">
+              <Loader2 size={12} className="animate-spin" /> 正在为您寻找最优派单路径...
+           </div>
         </div>
       );
     }
@@ -147,7 +211,7 @@ export const OrderDetailView: React.FC<OrderDetailProps> = ({ order: initialOrde
               <div className="flex items-center gap-2 mt-1.5">
                   <span className="text-[10px] opacity-60 font-bold uppercase tracking-wider">Order No.</span>
                   <span className="text-[10px] font-black font-mono">{order.id}</span>
-                  <Copy size={10} className="opacity-40" />
+                  <Copy size={10} className="opacity-40 hover:opacity-100 cursor-pointer" />
               </div>
             </div>
             
@@ -184,7 +248,7 @@ export const OrderDetailView: React.FC<OrderDetailProps> = ({ order: initialOrde
         onBack={onBack} 
         className={`${statusTheme.bg} border-none shadow-none transition-colors duration-500`}
         theme={order.status === OrderStatus.COMPLETED ? 'dark' : 'light'}
-        rightElement={<button className="p-2 opacity-50"><Share2 size={20}/></button>}
+        rightElement={<button className="p-2 opacity-50 hover:opacity-100"><Share2 size={20}/></button>}
       />
       
       <div className="flex-1 overflow-y-auto pb-safe no-scrollbar">
@@ -198,7 +262,7 @@ export const OrderDetailView: React.FC<OrderDetailProps> = ({ order: initialOrde
                 <div className="p-6 border-b border-dashed border-gray-100 flex justify-between items-center bg-gradient-to-r from-transparent to-gray-50/50">
                     <div>
                         <div className="flex items-center gap-2 mb-1">
-                           <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: statusTheme.accent }}></div>
+                           <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: statusTheme.accent }}></div>
                            <h3 className="text-xl font-black text-gray-900 tracking-tight">{order.storeName}</h3>
                         </div>
                         <p className="text-[10px] text-gray-400 font-bold ml-3.5 uppercase tracking-widest">High-End Bakery & Coffee</p>
@@ -239,7 +303,6 @@ export const OrderDetailView: React.FC<OrderDetailProps> = ({ order: initialOrde
 
                 {/* Summary Section with wavy top */}
                 <div className="px-6 py-8 bg-gray-50/80 border-t border-dashed border-gray-100 relative">
-                    {/* Wavy decoration for internal section */}
                     <div className="absolute top-0 inset-x-0 h-2 -translate-y-full opacity-20">
                         <div className="w-full h-full flex gap-1 justify-center">
                             {Array.from({length: 15}).map((_, i) => <div key={i} className="w-4 h-4 bg-gray-200 rounded-full -mt-2"></div>)}
@@ -274,14 +337,14 @@ export const OrderDetailView: React.FC<OrderDetailProps> = ({ order: initialOrde
                         <div className="flex flex-col items-end">
                             <div className="flex gap-1 mb-1">
                                 <div className="w-3 h-3 bg-[#FDE047] rounded-full flex items-center justify-center text-gray-900 text-[8px] font-black">章</div>
-                                <span className="text-[9px] font-black text-gray-900">+3 Points Earned</span>
+                                <span className="text-[9px] font-black text-gray-900">+{Math.ceil(order.payAmount / 10)} Points</span>
                             </div>
                             <span className="text-[8px] text-gray-400 font-bold uppercase tracking-[0.15em]">Transaction Verified</span>
                         </div>
                     </div>
                 </div>
 
-                {/* Ticket Wave Bottom - Real SVG wave for better aesthetic */}
+                {/* Ticket Wave Bottom */}
                 <div className="h-6 bg-gray-50/80 relative">
                     <svg viewBox="0 0 100 10" preserveAspectRatio="none" className="absolute bottom-0 w-full h-4 fill-[#F3F4F6]">
                         <path d="M0,10 C5,0 10,0 15,10 C20,0 25,0 30,10 C35,0 40,0 45,10 C50,0 55,0 60,10 C65,0 70,0 75,10 C80,0 85,0 90,10 C95,0 100,0 100,10 L100,10 L0,10 Z"></path>
@@ -317,17 +380,9 @@ export const OrderDetailView: React.FC<OrderDetailProps> = ({ order: initialOrde
                         </div>
                     </div>
                 </div>
-
-                {/* Dynamic Remark Card if present */}
-                {order.remark && (
-                    <div className="bg-[#FEFCE8] border border-[#FDE68A] rounded-3xl p-5 shadow-sm animate-in zoom-in duration-500 delay-300">
-                        <div className="text-[10px] font-black text-[#D97706] uppercase tracking-widest mb-2">Customer Remark</div>
-                        <p className="text-sm font-bold text-gray-900 italic">“{order.remark}”</p>
-                    </div>
-                )}
             </div>
 
-            {/* Sticky Action Footer Simulation */}
+            {/* Action Buttons */}
             <div className="flex gap-4 mt-8 pb-10">
                 <button 
                   onClick={onOrderAgain} 
@@ -350,12 +405,26 @@ export const OrderDetailView: React.FC<OrderDetailProps> = ({ order: initialOrde
         .animate-shimmer {
             animation: shimmer 1.5s infinite;
         }
-        .animate-spin-slow {
-            animation: spin 3s linear infinite;
+        @keyframes wiggle {
+            0%, 100% { transform: rotate(-3deg); }
+            50% { transform: rotate(3deg); }
         }
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+        .animate-wiggle {
+            animation: wiggle 0.5s ease-in-out infinite;
+        }
+        @keyframes bounce-slow {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .animate-bounce-slow {
+            animation: bounce-slow 2s infinite ease-in-out;
+        }
+        @keyframes progress-flow {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(300%); }
+        }
+        .animate-progress-flow {
+            animation: progress-flow 3s infinite linear;
         }
       `}} />
     </div>

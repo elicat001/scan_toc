@@ -108,7 +108,7 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto bg-white h-screen shadow-2xl relative overflow-hidden flex flex-col font-sans text-gray-900">
+    <div className="max-w-md mx-auto bg-[#F8F9FA] h-screen shadow-2xl relative overflow-hidden flex flex-col font-sans text-gray-900 ring-1 ring-black/5">
       <div className="flex-1 overflow-hidden relative">
         {renderView()}
       </div>

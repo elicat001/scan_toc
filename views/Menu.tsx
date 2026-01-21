@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { Search, ChevronRight, Plus, ShoppingCart, Heart, MapPin } from 'lucide-react';
+import { Search, ChevronRight, Plus, ShoppingCart, Heart, MapPin, Filter } from 'lucide-react';
 import { Product, Category, CartItem, Store } from '../types';
 import { api } from '../services/api';
 import { ProductModal } from '../components/ProductModal';
@@ -67,7 +67,7 @@ export const MenuView: React.FC<MenuProps> = ({
       e.stopPropagation();
       const isFav = await api.toggleFavorite(product.id);
       setProducts(prev => prev.map(p => p.id === product.id ? { ...p, isFavorite: isFav } : p));
-      showToast(isFav ? '已加入收藏' : '已取消收藏');
+      showToast(isFav ? '已加入收藏' : '已从收藏移除');
   };
 
   const displayedProducts = useMemo(() => {
@@ -114,20 +114,32 @@ export const MenuView: React.FC<MenuProps> = ({
             )}
           </div>
         </div>
+
+        {/* Filters Bar */}
         <div className="flex gap-2 py-1 pb-2 items-center overflow-x-auto no-scrollbar">
           <button 
             onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
-            className={`flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-medium border whitespace-nowrap transition-colors ${showFavoritesOnly ? 'bg-red-50 border-red-200 text-red-500' : 'bg-gray-50 border-gray-200 text-gray-600'}`}
+            className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold border transition-all duration-300 ${
+                showFavoritesOnly 
+                ? 'bg-red-500 border-red-500 text-white shadow-md' 
+                : 'bg-white border-gray-200 text-gray-600 hover:border-red-200 hover:text-red-500'
+            }`}
           >
-             <Heart size={10} className={showFavoritesOnly ? "fill-current" : ""} /> {showFavoritesOnly ? '已筛选收藏' : '我的收藏'}
+             <Heart size={12} className={showFavoritesOnly ? "fill-current" : ""} /> 
+             {showFavoritesOnly ? '只看收藏商品' : '我的收藏'}
           </button>
-          <div className="w-[1px] h-3 bg-gray-200 mx-1"></div>
-          <span className="text-[10px] text-[#B45309] font-medium border border-[#FDE68A] bg-[#FFFBEB] px-2 py-0.5 rounded-md whitespace-nowrap">会员商品6折起</span>
+          
+          <div className="w-[1px] h-4 bg-gray-200 mx-1"></div>
+          
+          <span className="text-[10px] text-[#B45309] font-bold border border-[#FDE68A] bg-[#FFFBEB] px-3 py-1 rounded-full whitespace-nowrap shadow-sm">
+             会员专享
+          </span>
         </div>
       </div>
 
       {/* Main Split Content */}
       <div className="flex flex-1 overflow-hidden relative">
+        {/* Category Sidebar */}
         <div className="w-[26%] bg-gray-50 h-full overflow-y-auto pb-24 no-scrollbar">
           {categories.map((cat) => (
             <div
@@ -142,52 +154,110 @@ export const MenuView: React.FC<MenuProps> = ({
           ))}
         </div>
 
+        {/* Product List */}
         <div className="flex-1 h-full overflow-y-auto bg-white pb-36 px-4">
           <div className="py-4">
              <div className="grid grid-cols-1 gap-8">
                {displayedProducts.length > 0 ? displayedProducts.map(product => (
-                 <div key={product.id} className="flex gap-3 group animate-in fade-in slide-in-from-right-2 duration-300" onClick={() => handleOpenProduct(product)}>
+                 <div 
+                    key={product.id} 
+                    className="flex gap-3 group animate-in fade-in slide-in-from-right-2 duration-300" 
+                    onClick={() => handleOpenProduct(product)}
+                 >
                     <div className="relative w-24 h-24 flex-shrink-0">
-                      <img src={product.image} className="w-full h-full rounded-lg object-cover bg-gray-100 shadow-sm" alt={product.name} loading="lazy" />
-                      <button onClick={(e) => handleToggleFavorite(e, product)} className="absolute top-1 right-1 w-6 h-6 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center shadow-sm">
-                         <Heart size={12} className={product.isFavorite ? 'text-red-500 fill-red-500' : 'text-gray-400'} />
+                      <img 
+                        src={product.image} 
+                        className="w-full h-full rounded-lg object-cover bg-gray-100 shadow-sm transition-transform duration-500 group-hover:scale-105" 
+                        alt={product.name} 
+                        loading="lazy" 
+                      />
+                      {/* Heart Icon on Image */}
+                      <button 
+                        onClick={(e) => handleToggleFavorite(e, product)} 
+                        className={`absolute top-1 right-1 w-6 h-6 rounded-full flex items-center justify-center shadow-sm transition-all duration-300 backdrop-blur-md ${
+                            product.isFavorite ? 'bg-red-500 text-white' : 'bg-white/80 text-gray-400 hover:text-red-400'
+                        }`}
+                      >
+                         <Heart size={12} className={product.isFavorite ? 'fill-current' : ''} />
                       </button>
                     </div>
+                    
                     <div className="flex-1 flex flex-col justify-between py-0.5">
                        <div>
-                          <div className="flex items-start gap-1.5 mb-1">
-                            {product.isVip && <span className="bg-[#1F2937] text-[#FDE047] text-[8px] px-1 py-0.5 rounded-[4px] font-black italic mt-0.5 transform -skew-x-12">VIP</span>}
-                            <h4 className="font-bold text-gray-900 text-sm line-clamp-2">{product.name}</h4>
+                          <div className="flex items-start justify-between mb-1">
+                            <div className="flex flex-wrap items-center gap-1.5">
+                                {product.isVip && (
+                                    <span className="bg-[#1F2937] text-[#FDE047] text-[8px] px-1 py-0.5 rounded-[4px] font-black italic transform -skew-x-12">VIP</span>
+                                )}
+                                <h4 className="font-bold text-gray-900 text-sm line-clamp-2 leading-tight">
+                                    {product.name}
+                                </h4>
+                            </div>
+                            
+                            {/* Favorite Icon next to name */}
+                            <button 
+                                onClick={(e) => handleToggleFavorite(e, product)}
+                                className={`ml-2 p-1 rounded-full transition-all active:scale-125 ${
+                                    product.isFavorite ? 'text-red-500' : 'text-gray-200'
+                                }`}
+                            >
+                                <Heart size={14} className={product.isFavorite ? "fill-current" : ""} />
+                            </button>
                           </div>
-                          {product.description && <p className="text-[10px] text-gray-400 line-clamp-1 leading-relaxed">{product.description}</p>}
+                          {product.description && (
+                            <p className="text-[10px] text-gray-400 line-clamp-1 leading-relaxed">{product.description}</p>
+                          )}
                        </div>
+                       
                        <div className="flex items-end justify-between mt-2">
                           <div>
                              {product.isVip ? (
                                 <div className="flex flex-col items-start">
-                                    <div className="bg-[#1F2937] text-[#FDE047] text-[9px] px-1.5 py-0.5 rounded-[4px] font-bold">¥{product.vipPrice}</div>
+                                    <div className="bg-[#1F2937] text-[#FDE047] text-[9px] px-1.5 py-0.5 rounded-[4px] font-bold shadow-sm">¥{product.vipPrice}</div>
                                     <span className="text-[10px] text-gray-400 mt-0.5 line-through decoration-gray-300">¥{product.price}</span>
                                 </div>
                              ) : (
                                 <span className="text-base font-bold text-gray-900">¥{product.price}</span>
                              )}
                           </div>
-                          <button onClick={(e) => handleDirectAdd(e, product)} className={`h-6 flex items-center justify-center transition-all active:scale-90 ${product.specs ? 'bg-[#FDE047] px-2.5 rounded-full' : 'w-6 h-6 bg-[#FDE047] rounded-full'}`}>
+                          <button onClick={(e) => handleDirectAdd(e, product)} className={`h-6 flex items-center justify-center transition-all active:scale-90 ${product.specs ? 'bg-[#FDE047] px-2.5 rounded-full shadow-sm' : 'w-6 h-6 bg-[#FDE047] rounded-full shadow-sm'}`}>
                              {product.specs ? <span className="text-[10px] font-bold text-gray-900">选规格</span> : <Plus size={14} className="text-gray-900" />}
                           </button>
                        </div>
                     </div>
                  </div>
                )) : (
-                 <div className="flex flex-col items-center justify-center py-10 text-gray-400 gap-2">
-                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center"><Search size={24} className="text-gray-300" /></div>
-                    <span className="text-xs">暂无商品</span>
+                 <div className="flex flex-col items-center justify-center py-20 text-gray-400 gap-3">
+                    <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center">
+                        {showFavoritesOnly ? (
+                            <Heart size={28} className="text-gray-200" />
+                        ) : (
+                            <Search size={28} className="text-gray-200" />
+                        )}
+                    </div>
+                    <div className="flex flex-col items-center">
+                        <span className="text-sm font-bold text-gray-900 mb-1">
+                            {showFavoritesOnly ? '暂无收藏商品' : '暂无相关商品'}
+                        </span>
+                        <span className="text-xs text-gray-400">
+                            {showFavoritesOnly ? '收藏心仪的商品，点单更方便' : '换个分类看看吧'}
+                        </span>
+                    </div>
+                    {showFavoritesOnly && (
+                        <button 
+                            onClick={() => setShowFavoritesOnly(false)}
+                            className="mt-2 text-xs font-bold text-[#D97706] bg-yellow-50 px-4 py-2 rounded-full border border-yellow-100"
+                        >
+                            查看全部商品
+                        </button>
+                    )}
                  </div>
                )}
              </div>
           </div>
         </div>
         
+        {/* Cart Floating Bar */}
         <div className="absolute bottom-20 left-4 right-4 z-50 animate-in slide-in-from-bottom-4 duration-300">
            <div className={`rounded-full p-2 pr-2 shadow-2xl flex items-center justify-between h-14 transition-colors ${cart.length > 0 ? 'bg-gray-900 text-white' : 'bg-black/80 text-gray-400'}`}>
               <div className="flex items-center gap-3 flex-1 cursor-pointer" onClick={cart.length > 0 ? onCheckout : undefined}>
