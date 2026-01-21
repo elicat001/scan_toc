@@ -112,8 +112,11 @@ export interface Order {
   totalAmount: number;
   payAmount: number;
   discountAmount: number;
-  type: 'Dine In' | 'Pick Up' | 'Delivery';
+  type: 'Dine In' | 'Pick Up' | 'Delivery' | 'Scan Order';
+  tableNo?: string;
   remark?: string;
+  queueNo?: string;
+  estimatedTime?: string;
 }
 
 export interface Banner {
@@ -167,4 +170,5 @@ export type ViewState =
   | 'POINTS_ITEM_DETAIL'
   | 'RESERVATION'
   | 'STORE_DETAIL'
-  | 'MEMBER_CODE';
+  | 'MEMBER_CODE'
+  | 'SCAN_ORDER';

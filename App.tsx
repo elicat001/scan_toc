@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState } from 'react';
 import { BottomNav } from './components/BottomNav';
 import { HomeView } from './views/Home';
 import { MenuView } from './views/Menu';
@@ -16,36 +17,19 @@ import { PointsItemDetailView } from './views/PointsItemDetail';
 import { ReservationView } from './views/Reservation';
 import { StoreDetailView } from './views/StoreDetail';
 import { MemberCodeView } from './views/MemberCode';
-import { ViewState, CartItem, Product, Order, PointsReward } from './types';
+import { ScanOrderView } from './views/ScanOrder';
+import { ViewState, Order, PointsReward } from './types';
 import { api } from './services/api';
+import { ToastProvider } from './components/Toast';
+import { useCart } from './hooks/useCart';
 
-const App: React.FC = () => {
+const AppContent: React.FC = () => {
   const [currentView, setCurrentView] = useState<ViewState>('HOME');
-  const [cart, setCart] = useState<CartItem[]>([]);
+  const { cart, cartCount, cartTotal, addToCart, removeFromCart, clearCart, setCart: setFullCart } = useCart();
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [selectedReward, setSelectedReward] = useState<PointsReward | null>(null);
-  const [initialDiningMode, setInitialDiningMode] = useState<'dine-in' | 'pickup' | 'delivery'>('dine-in');
-
-  const handleAddToCart = (product: Product, quantity: number, selectedSpec?: Record<string, string>) => {
-    setCart(prev => {
-      // Check if same product AND same specs exists
-      const existingIndex = prev.findIndex(item => 
-        item.id === product.id && 
-        JSON.stringify(item.selectedSpec) === JSON.stringify(selectedSpec)
-      );
-
-      if (existingIndex > -1) {
-        const newCart = [...prev];
-        newCart[existingIndex].quantity += quantity;
-        return newCart;
-      }
-      return [...prev, { ...product, quantity, selectedSpec }];
-    });
-  };
-
-  const handleRemoveFromCart = (productId: number) => {
-    setCart(prev => prev.filter(item => item.id !== productId));
-  };
+  const [initialDiningMode, setInitialDiningMode] = useState<'dine-in' | 'pickup' | 'delivery' | 'scan-order'>('dine-in');
+  const [tableNo, setTableNo] = useState<string | null>(null);
 
   const handleOrderSelect = (order: Order) => {
     setSelectedOrder(order);
@@ -53,10 +37,8 @@ const App: React.FC = () => {
   };
 
   const handleViewCreatedOrder = async (orderId: string) => {
-      // Clear cart
-      setCart([]);
-      
-      // Fetch the order
+      clearCart();
+      setTableNo(null);
       const order = await api.getOrder(orderId);
       if (order) {
           setSelectedOrder(order);
@@ -66,91 +48,62 @@ const App: React.FC = () => {
       }
   };
 
-  // Re-order logic: Convert OrderItems to CartItems and go to checkout
   const handleOrderAgain = (order: Order) => {
-      const newCartItems: CartItem[] = order.items.map(item => {
-          return {
-              id: item.productId,
-              categoryId: 0, 
-              name: item.name,
-              price: item.price,
-              image: item.image,
-              quantity: item.count,
-              selectedSpec: undefined 
-          };
-      });
-      setCart(newCartItems);
+      const newCartItems = order.items.map(item => ({
+          id: item.productId,
+          categoryId: 0, 
+          name: item.name,
+          price: item.price,
+          image: item.image,
+          quantity: item.count,
+          selectedSpec: undefined 
+      }));
+      setFullCart(newCartItems as any);
 
-      // Set dining mode based on order type
-      let mode: 'dine-in' | 'pickup' | 'delivery' = 'dine-in';
+      let mode: 'dine-in' | 'pickup' | 'delivery' | 'scan-order' = 'dine-in';
       if (order.type === 'Pick Up') mode = 'pickup';
       if (order.type === 'Delivery') mode = 'delivery';
+      if (order.type === 'Scan Order') {
+          mode = 'scan-order';
+          setTableNo(order.tableNo || 'A-01');
+      }
       setInitialDiningMode(mode);
-
       setCurrentView('CHECKOUT');
   };
   
   const handleNavigateFromHome = (view: ViewState) => {
-      // Default to dine-in if coming from generic entry, typically Menu handles its own defaults
-      // but if we clicked specific buttons in Home, we might want to pass state. 
-      // For now simple nav.
-      setInitialDiningMode('dine-in');
+      if (view !== 'SCAN_ORDER' && view !== 'MENU') {
+          setTableNo(null);
+      }
       setCurrentView(view);
+  };
+
+  const handleScanned = (scannedTableNo: string) => {
+      setTableNo(scannedTableNo);
+      setInitialDiningMode('scan-order');
+      setCurrentView('MENU');
   };
 
   const renderView = () => {
     switch (currentView) {
-      case 'HOME':
-        return <HomeView onNavigate={handleNavigateFromHome} />;
-      case 'MENU':
-        return (
-          <MenuView 
-            cart={cart} 
-            onAddToCart={handleAddToCart} 
-            onRemoveFromCart={handleRemoveFromCart}
-            onCheckout={() => setCurrentView('CHECKOUT')}
-            initialDiningMode={initialDiningMode}
-          />
-        );
-      case 'ORDERS':
-        return <OrdersView onSelectOrder={handleOrderSelect} onOrderAgain={handleOrderAgain} />;
-      case 'PROFILE':
-        return <ProfileView onNavigate={setCurrentView} />;
-      case 'CHECKOUT':
-        return (
-            <CheckoutView 
-                cart={cart} 
-                onBack={() => setCurrentView('MENU')} 
-                initialDiningMode={initialDiningMode} 
-                onViewOrder={handleViewCreatedOrder}
-            />
-        );
-      case 'ADDRESS_LIST':
-        return <AddressListView onBack={() => setCurrentView('PROFILE')} />;
-      case 'STORE_LIST':
-        return <StoreListView onBack={() => setCurrentView('HOME')} onSelect={(store) => setCurrentView('MENU')} />;
-      case 'ORDER_DETAIL':
-        if (!selectedOrder) return <OrdersView onSelectOrder={handleOrderSelect} onOrderAgain={handleOrderAgain} />;
-        return <OrderDetailView order={selectedOrder} onBack={() => setCurrentView('ORDERS')} onOrderAgain={() => handleOrderAgain(selectedOrder)} />;
-      case 'USER_PROFILE':
-        return <UserProfileView onBack={() => setCurrentView('PROFILE')} />;
-      case 'MEMBER_TOPUP':
-        return <MemberTopUpView onBack={() => setCurrentView('PROFILE')} />;
-      case 'POINTS_MALL':
-        return <PointsMallView onBack={() => setCurrentView('PROFILE')} onHistory={() => setCurrentView('POINTS_HISTORY')} onSelectReward={(r) => { setSelectedReward(r); setCurrentView('POINTS_ITEM_DETAIL'); }} />;
-      case 'POINTS_HISTORY':
-        return <PointsHistoryView onBack={() => setCurrentView('POINTS_MALL')} />;
-      case 'POINTS_ITEM_DETAIL':
-        if (!selectedReward) return <PointsMallView onBack={() => setCurrentView('PROFILE')} onHistory={() => setCurrentView('POINTS_HISTORY')} onSelectReward={() => {}} />;
-        return <PointsItemDetailView reward={selectedReward} onBack={() => setCurrentView('POINTS_MALL')} />;
-      case 'RESERVATION':
-        return <ReservationView onBack={() => setCurrentView('HOME')} />;
-      case 'STORE_DETAIL':
-        return <StoreDetailView onBack={() => setCurrentView('HOME')} />;
-      case 'MEMBER_CODE':
-        return <MemberCodeView onBack={() => setCurrentView('HOME')} onTopUp={() => setCurrentView('MEMBER_TOPUP')} />;
-      default:
-        return <HomeView onNavigate={setCurrentView} />;
+      case 'HOME': return <HomeView onNavigate={handleNavigateFromHome} />;
+      case 'SCAN_ORDER': return <ScanOrderView onBack={() => setCurrentView('HOME')} onScanned={handleScanned} />;
+      case 'MENU': return <MenuView cart={cart} onAddToCart={addToCart} onRemoveFromCart={removeFromCart} onCheckout={() => setCurrentView('CHECKOUT')} initialDiningMode={initialDiningMode} tableNo={tableNo} />;
+      case 'ORDERS': return <OrdersView onSelectOrder={handleOrderSelect} onOrderAgain={handleOrderAgain} />;
+      case 'PROFILE': return <ProfileView onNavigate={setCurrentView} />;
+      case 'CHECKOUT': return <CheckoutView cart={cart} onBack={() => setCurrentView('MENU')} initialDiningMode={initialDiningMode} onViewOrder={handleViewCreatedOrder} tableNo={tableNo} />;
+      case 'ORDER_DETAIL': return selectedOrder ? <OrderDetailView order={selectedOrder} onBack={() => setCurrentView('ORDERS')} onOrderAgain={() => handleOrderAgain(selectedOrder)} /> : <OrdersView onSelectOrder={handleOrderSelect} onOrderAgain={handleOrderAgain} />;
+      case 'ADDRESS_LIST': return <AddressListView onBack={() => setCurrentView('PROFILE')} />;
+      case 'STORE_LIST': return <StoreListView onBack={() => setCurrentView('HOME')} onSelect={() => setCurrentView('MENU')} />;
+      case 'USER_PROFILE': return <UserProfileView onBack={() => setCurrentView('PROFILE')} />;
+      case 'MEMBER_TOPUP': return <MemberTopUpView onBack={() => setCurrentView('PROFILE')} />;
+      case 'POINTS_MALL': return <PointsMallView onBack={() => setCurrentView('PROFILE')} onHistory={() => setCurrentView('POINTS_HISTORY')} onSelectReward={(r) => { setSelectedReward(r); setCurrentView('POINTS_ITEM_DETAIL'); }} />;
+      case 'POINTS_HISTORY': return <PointsHistoryView onBack={() => setCurrentView('POINTS_MALL')} />;
+      case 'POINTS_ITEM_DETAIL': return selectedReward ? <PointsItemDetailView reward={selectedReward} onBack={() => setCurrentView('POINTS_MALL')} /> : null;
+      case 'RESERVATION': return <ReservationView onBack={() => setCurrentView('HOME')} />;
+      case 'STORE_DETAIL': return <StoreDetailView onBack={() => setCurrentView('HOME')} />;
+      case 'MEMBER_CODE': return <MemberCodeView onBack={() => setCurrentView('HOME')} onTopUp={() => setCurrentView('MEMBER_TOPUP')} />;
+      default: return <HomeView onNavigate={setCurrentView} />;
     }
   };
 
@@ -163,5 +116,11 @@ const App: React.FC = () => {
     </div>
   );
 };
+
+const App: React.FC = () => (
+  <ToastProvider>
+    <AppContent />
+  </ToastProvider>
+);
 
 export default App;

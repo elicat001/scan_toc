@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from 'react';
-import { ChevronRight, MoreHorizontal, Check, Wallet, X } from 'lucide-react';
+import { ChevronRight, MoreHorizontal, Check, Wallet, X, Info } from 'lucide-react';
 import { CartItem, Coupon, User } from '../types';
 import { api } from '../services/api';
 import { Header } from '../components/Header';
@@ -7,13 +8,20 @@ import { Header } from '../components/Header';
 interface CheckoutProps {
   cart: CartItem[];
   onBack: () => void;
-  initialDiningMode?: 'dine-in' | 'pickup' | 'delivery';
+  initialDiningMode?: 'dine-in' | 'pickup' | 'delivery' | 'scan-order';
   onViewOrder?: (orderId: string) => void;
+  tableNo?: string | null;
 }
 
-export const CheckoutView: React.FC<CheckoutProps> = ({ cart, onBack, initialDiningMode = 'dine-in', onViewOrder }) => {
+export const CheckoutView: React.FC<CheckoutProps> = ({ 
+  cart, 
+  onBack, 
+  initialDiningMode = 'dine-in', 
+  onViewOrder,
+  tableNo
+}) => {
   const cartTotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const [diningMode, setDiningMode] = useState<'dine-in' | 'pickup' | 'delivery'>(initialDiningMode);
+  const [diningMode, setDiningMode] = useState<'dine-in' | 'pickup' | 'delivery' | 'scan-order'>(initialDiningMode);
   const [paymentMethod, setPaymentMethod] = useState<'wechat' | 'balance'>('wechat');
   const [isPaymentProcessing, setIsPaymentProcessing] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -43,7 +51,8 @@ export const CheckoutView: React.FC<CheckoutProps> = ({ cart, onBack, initialDin
       const { orderId } = await api.createOrder({ 
           storeId: 1, 
           items: cart, 
-          type: diningMode === 'dine-in' ? 'Dine In' : diningMode === 'pickup' ? 'Pick Up' : 'Delivery' 
+          type: tableNo ? 'Scan Order' : (diningMode === 'dine-in' ? 'Dine In' : diningMode === 'pickup' ? 'Pick Up' : 'Delivery'),
+          tableNo: tableNo || undefined
       });
       await api.payOrder(orderId);
       
@@ -67,6 +76,26 @@ export const CheckoutView: React.FC<CheckoutProps> = ({ cart, onBack, initialDin
 
   // Mode specific render content
   const renderHeaderContent = () => {
+      if (tableNo) {
+          return (
+              <div className="bg-white rounded-xl p-5 mb-3 shadow-sm border-l-4 border-[#FDE047]">
+                 <div className="flex justify-between items-start">
+                    <div>
+                        <h3 className="font-bold text-lg text-gray-900">扫码点餐</h3>
+                        <p className="text-xs text-gray-500 mt-1">棠小一 (科技园店)</p>
+                    </div>
+                    <div className="bg-gray-900 text-[#FDE047] px-3 py-1 rounded-lg text-sm font-bold">
+                        {tableNo} 桌
+                    </div>
+                 </div>
+                 <div className="mt-4 pt-3 border-t border-gray-50 flex items-center gap-2 text-[10px] text-[#CA8A04] bg-yellow-50/50 p-2 rounded">
+                    <Info size={14} />
+                    下单后请在座位稍候，美味将由店员为您送达
+                 </div>
+              </div>
+          );
+      }
+
       if (diningMode === 'dine-in') {
           return (
               <div className="bg-white rounded-xl p-4 mb-3 shadow-sm">
@@ -143,11 +172,13 @@ export const CheckoutView: React.FC<CheckoutProps> = ({ cart, onBack, initialDin
       <div className="flex-1 overflow-y-auto pb-32">
           {/* Dining Mode Toggle */}
           <div className="px-4 pt-4">
-            <div className="bg-white p-1.5 rounded-full flex mb-4 shadow-sm">
-                <button onClick={() => setDiningMode('dine-in')} className={`flex-1 py-2 rounded-full font-bold text-sm transition-all ${diningMode === 'dine-in' ? 'bg-[#FDE047] text-gray-900 shadow-sm' : 'text-gray-500'}`}>堂食</button>
-                <button onClick={() => setDiningMode('pickup')} className={`flex-1 py-2 rounded-full font-bold text-sm transition-all ${diningMode === 'pickup' ? 'bg-[#FDE047] text-gray-900 shadow-sm' : 'text-gray-500'}`}>自取</button>
-                <button onClick={() => setDiningMode('delivery')} className={`flex-1 py-2 rounded-full font-bold text-sm transition-all ${diningMode === 'delivery' ? 'bg-[#FDE047] text-gray-900 shadow-sm' : 'text-gray-500'}`}>快递</button>
-            </div>
+            {!tableNo && (
+              <div className="bg-white p-1.5 rounded-full flex mb-4 shadow-sm">
+                  <button onClick={() => setDiningMode('dine-in')} className={`flex-1 py-2 rounded-full font-bold text-sm transition-all ${diningMode === 'dine-in' ? 'bg-[#FDE047] text-gray-900 shadow-sm' : 'text-gray-500'}`}>堂食</button>
+                  <button onClick={() => setDiningMode('pickup')} className={`flex-1 py-2 rounded-full font-bold text-sm transition-all ${diningMode === 'pickup' ? 'bg-[#FDE047] text-gray-900 shadow-sm' : 'text-gray-500'}`}>自取</button>
+                  <button onClick={() => setDiningMode('delivery')} className={`flex-1 py-2 rounded-full font-bold text-sm transition-all ${diningMode === 'delivery' ? 'bg-[#FDE047] text-gray-900 shadow-sm' : 'text-gray-500'}`}>快递</button>
+              </div>
+            )}
 
             {renderHeaderContent()}
 
@@ -374,6 +405,12 @@ export const CheckoutView: React.FC<CheckoutProps> = ({ cart, onBack, initialDin
                           <span className="text-xs text-gray-500">下单门店</span>
                           <span className="text-xs text-gray-700 font-medium">棠小一 (科技园店)</span>
                       </div>
+                      {tableNo && (
+                        <div className="flex justify-between items-center py-1">
+                            <span className="text-xs text-gray-500">用餐桌号</span>
+                            <span className="text-xs text-gray-700 font-bold">{tableNo}</span>
+                        </div>
+                      )}
                       <div className="flex justify-between items-center py-1">
                           <span className="text-xs text-gray-500">商品详情</span>
                           <span className="text-xs text-gray-700">共 {cart.reduce((a,b) => a + b.quantity, 0)} 件商品</span>
@@ -393,16 +430,49 @@ export const CheckoutView: React.FC<CheckoutProps> = ({ cart, onBack, initialDin
                   </div>
 
                   <div className="p-6 pt-0">
-                      <button 
-                         onClick={handleFinish}
-                         className="w-full bg-[#FDE047] text-gray-900 font-bold py-3.5 rounded-xl hover:bg-yellow-400 transition-colors shadow-sm"
-                      >
-                          查看订单
-                      </button>
+                      <div className="flex gap-3">
+                        <button 
+                            onClick={handleFinish}
+                            className="flex-1 bg-gray-100 text-gray-900 font-bold py-3.5 rounded-xl transition-colors shadow-sm"
+                        >
+                            返回
+                        </button>
+                        <button 
+                            onClick={handleFinish}
+                            className="flex-[2] bg-[#FDE047] text-gray-900 font-bold py-3.5 rounded-xl hover:bg-yellow-400 transition-colors shadow-sm"
+                        >
+                            查看订单
+                        </button>
+                      </div>
                   </div>
               </div>
           </div>
       )}
+
+      {/* Footer Payment Bar */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white p-4 border-t border-gray-100 flex items-center justify-between pb-safe max-w-md mx-auto z-40">
+          <div className="flex flex-col">
+              <span className="text-xs text-gray-400">应付合计</span>
+              <div className="flex items-baseline gap-1">
+                  <span className="text-sm font-bold text-[#D97706]">¥</span>
+                  <span className="text-2xl font-bold text-[#D97706]">{grandTotal.toFixed(2)}</span>
+              </div>
+          </div>
+          <button 
+             onClick={handlePay}
+             disabled={isPaymentProcessing}
+             className="bg-gray-900 text-white px-10 py-3.5 rounded-full font-bold shadow-lg hover:bg-black active:scale-[0.98] transition-all flex items-center gap-2"
+          >
+             {isPaymentProcessing ? (
+               <>
+                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                 支付中...
+               </>
+             ) : (
+               '立即结算'
+             )}
+          </button>
+      </div>
     </div>
   );
 };

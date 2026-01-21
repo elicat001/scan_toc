@@ -1,5 +1,7 @@
 {
   "name": "Tang Xiao Yi Food Order",
   "description": "A mobile-first food ordering application clone featuring dine-in, delivery, menu browsing, cart management, and user profile views.",
-  "requestFramePermissions": []
+  "requestFramePermissions": [
+    "camera"
+  ]
 }

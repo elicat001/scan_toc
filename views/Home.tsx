@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { MapPin, ChevronRight, Store, ShoppingBag, Truck, Calendar, Navigation, Phone } from 'lucide-react';
+import { MapPin, ChevronRight, Store, ShoppingBag, Truck, Calendar, Navigation, Phone, QrCode } from 'lucide-react';
 import { ViewState, User, Store as StoreType, Banner, Product } from '../types';
 import { api } from '../services/api';
 
@@ -58,15 +58,15 @@ export const HomeView: React.FC<HomeProps> = ({ onNavigate }) => {
         {/* Main Actions Grid */}
         <div className="grid grid-cols-2 gap-4 px-2 mb-2">
           <button 
-             onClick={() => onNavigate('MENU')} 
-             className="bg-[#FEFCE8] hover:bg-[#FEF9C3] transition-colors p-4 rounded-2xl flex items-center gap-3 shadow-sm border border-[#FEF08A]"
+             onClick={() => onNavigate('SCAN_ORDER')} 
+             className="bg-[#FEFCE8] hover:bg-[#FEF9C3] transition-colors p-4 rounded-2xl flex items-center gap-3 shadow-sm border border-[#FEF08A] col-span-2 py-5"
           >
-            <div className="bg-[#FDE047] p-2.5 rounded-full text-gray-900">
-                <Store size={24} strokeWidth={2.5} />
+            <div className="bg-[#FDE047] p-3 rounded-full text-gray-900">
+                <QrCode size={28} strokeWidth={2.5} />
             </div>
             <div className="text-left">
-              <span className="block font-bold text-lg text-gray-900">堂食</span>
-              <span className="block text-[10px] text-yellow-700 font-medium">Dine In</span>
+              <span className="block font-bold text-xl text-gray-900">扫码点餐</span>
+              <span className="block text-[11px] text-yellow-700 font-medium">Scan QR to Order at Table</span>
             </div>
           </button>
 
@@ -106,6 +106,19 @@ export const HomeView: React.FC<HomeProps> = ({ onNavigate }) => {
             <div className="text-left">
               <span className="block font-bold text-lg text-gray-900">自助预约</span>
               <span className="block text-[10px] text-gray-400 font-medium">Reservation</span>
+            </div>
+          </button>
+          
+          <button 
+             onClick={() => onNavigate('MENU')} 
+             className="bg-white hover:bg-gray-50 transition-colors p-4 rounded-2xl flex items-center gap-3 shadow-sm border border-gray-100"
+          >
+            <div className="bg-gray-100 p-2.5 rounded-full text-gray-900">
+                <Store size={24} strokeWidth={2.5} />
+            </div>
+            <div className="text-left">
+              <span className="block font-bold text-lg text-gray-900">堂食</span>
+              <span className="block text-[10px] text-gray-400 font-medium">Dine In</span>
             </div>
           </button>
         </div>
