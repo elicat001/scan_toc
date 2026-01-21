@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { Search, ChevronRight, Plus, ShoppingCart, Heart, MapPin, Filter } from 'lucide-react';
+import { Search, ChevronRight, Plus, ShoppingCart, Heart, MapPin } from 'lucide-react';
 import { Product, Category, CartItem, Store } from '../types';
 import { api } from '../services/api';
 import { ProductModal } from '../components/ProductModal';
@@ -77,22 +77,21 @@ export const MenuView: React.FC<MenuProps> = ({
 
   return (
     <div className="flex flex-col h-screen bg-white">
-      {/* Header */}
       <div className="pt-4 px-4 pb-2 bg-white z-20 shadow-[0_4px_10px_-4px_rgba(0,0,0,0.05)]">
         <div className="flex items-center justify-between mb-3">
           <div className="flex-1 min-w-0">
-            <h2 className="text-lg font-bold flex items-center text-gray-900 truncate">
+            <h2 className="text-lg font-black flex items-center text-gray-900 truncate tracking-tight">
               {storeInfo?.name || 'Loading...'} <ChevronRight size={18} className="mt-0.5 ml-1 flex-shrink-0" />
             </h2>
             {tableNo ? (
-              <div className="flex items-center gap-1.5 mt-1 text-[#D97706] font-bold">
+              <div className="flex items-center gap-1.5 mt-1 text-[#D97706] font-black">
                  <div className="w-1.5 h-1.5 bg-[#D97706] rounded-full animate-pulse"></div>
-                 <span className="text-xs">正在 {tableNo} 桌点餐</span>
+                 <span className="text-[10px] tracking-premium uppercase">Table {tableNo} Ordering</span>
               </div>
             ) : (
-              <p className="text-[10px] text-gray-500 mt-1 flex items-center gap-1">
+              <p className="text-[10px] text-gray-500 mt-1 flex items-center gap-1 font-bold">
                 <MapPin size={10} />
-                <span className="bg-gray-100 px-1.5 py-0.5 rounded text-gray-600">距离您{storeInfo?.distance}</span>
+                <span className="bg-gray-100 px-1.5 py-0.5 rounded text-gray-600 tracking-tight">{storeInfo?.distance} away</span>
               </p>
             )}
           </div>
@@ -103,181 +102,148 @@ export const MenuView: React.FC<MenuProps> = ({
                     <button 
                         key={mode}
                         onClick={() => setDiningMode(mode as any)}
-                        className={`px-3 py-1.5 rounded-full text-[11px] font-bold transition-all ${diningMode === mode ? 'bg-gray-900 text-white shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
+                        className={`px-3 py-1.5 rounded-full text-[11px] font-black transition-all ${diningMode === mode ? 'bg-gray-900 text-white shadow-sm' : 'text-gray-400 hover:text-gray-900'}`}
                     >
                         {mode === 'dine-in' ? '堂食' : mode === 'pickup' ? '自取' : '外送'}
                     </button>
                 ))}
               </>
             ) : (
-              <div className="px-4 py-1.5 rounded-full text-[11px] font-bold bg-gray-900 text-white">扫码点餐</div>
+              <div className="px-4 py-1.5 rounded-full text-[11px] font-black bg-gray-900 text-white tracking-widest">SCAN ORDER</div>
             )}
           </div>
         </div>
 
-        {/* Filters Bar */}
         <div className="flex gap-2 py-1 pb-2 items-center overflow-x-auto no-scrollbar">
           <button 
             onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
-            className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold border transition-all duration-300 ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black tracking-premium border transition-all duration-300 ${
                 showFavoritesOnly 
                 ? 'bg-red-500 border-red-500 text-white shadow-md' 
-                : 'bg-white border-gray-200 text-gray-600 hover:border-red-200 hover:text-red-500'
+                : 'bg-white border-gray-100 text-gray-500 hover:border-red-200 hover:text-red-500'
             }`}
           >
-             <Heart size={12} className={showFavoritesOnly ? "fill-current" : ""} /> 
-             {showFavoritesOnly ? '只看收藏商品' : '我的收藏'}
+             <Heart size={10} className={showFavoritesOnly ? "fill-current" : ""} /> 
+             FAVORITES
           </button>
-          
-          <div className="w-[1px] h-4 bg-gray-200 mx-1"></div>
-          
-          <span className="text-[10px] text-[#B45309] font-bold border border-[#FDE68A] bg-[#FFFBEB] px-3 py-1 rounded-full whitespace-nowrap shadow-sm">
-             会员专享
+          <div className="w-[1px] h-3 bg-gray-200 mx-1"></div>
+          <span className="text-[9px] text-[#B45309] font-black tracking-premium border border-[#FDE68A] bg-[#FFFBEB] px-3 py-1.5 rounded-full whitespace-nowrap shadow-sm">
+             VIP EXCLUSIVE
           </span>
         </div>
       </div>
 
-      {/* Main Split Content */}
       <div className="flex flex-1 overflow-hidden relative">
-        {/* Category Sidebar */}
-        <div className="w-[26%] bg-gray-50 h-full overflow-y-auto pb-24 no-scrollbar">
+        <div className="w-[26%] bg-gray-50 h-full overflow-y-auto pb-24 no-scrollbar border-r border-gray-100">
           {categories.map((cat) => (
             <div
               key={cat.id}
               onClick={() => setActiveCategory(cat.id)}
-              className={`p-4 text-xs flex flex-col items-center justify-center text-center cursor-pointer relative transition-colors ${activeCategory === cat.id ? 'bg-white font-bold text-gray-900' : 'text-gray-500 hover:bg-gray-100'}`}
+              className={`p-5 text-[11px] flex flex-col items-center justify-center text-center cursor-pointer relative transition-all ${activeCategory === cat.id ? 'bg-white font-black text-gray-900 shadow-sm' : 'text-gray-400 hover:bg-gray-100'}`}
             >
-              {activeCategory === cat.id && <div className="absolute left-0 top-4 bottom-4 w-1 bg-gray-900 rounded-r-full" />}
-              <span className="text-xl mb-1.5">{cat.icon}</span>
-              <span className="leading-tight">{cat.name}</span>
+              {activeCategory === cat.id && <div className="absolute left-0 top-3 bottom-3 w-1 bg-gray-900 rounded-r-full" />}
+              <span className="text-2xl mb-2">{cat.icon}</span>
+              <span className="leading-tight tracking-tight">{cat.name}</span>
             </div>
           ))}
         </div>
 
-        {/* Product List */}
-        <div className="flex-1 h-full overflow-y-auto bg-white pb-36 px-4">
+        <div className="flex-1 h-full overflow-y-auto bg-white pb-36 px-4 no-scrollbar">
           <div className="py-4">
-             <div className="grid grid-cols-1 gap-8">
+             <div className="grid grid-cols-1 gap-10">
                {displayedProducts.length > 0 ? displayedProducts.map(product => (
                  <div 
                     key={product.id} 
-                    className="flex gap-3 group animate-in fade-in slide-in-from-right-2 duration-300" 
+                    className="flex gap-4 group animate-in fade-in slide-in-from-right-3 duration-500" 
                     onClick={() => handleOpenProduct(product)}
                  >
-                    <div className="relative w-24 h-24 flex-shrink-0">
+                    <div className="relative w-28 h-28 flex-shrink-0">
                       <img 
                         src={product.image} 
-                        className="w-full h-full rounded-lg object-cover bg-gray-100 shadow-sm transition-transform duration-500 group-hover:scale-105" 
+                        className="w-full h-full rounded-2xl object-cover bg-gray-50 shadow-md transition-transform duration-700 group-hover:scale-105" 
                         alt={product.name} 
-                        loading="lazy" 
                       />
-                      {/* Heart Icon on Image */}
                       <button 
                         onClick={(e) => handleToggleFavorite(e, product)} 
-                        className={`absolute top-1 right-1 w-6 h-6 rounded-full flex items-center justify-center shadow-sm transition-all duration-300 backdrop-blur-md ${
-                            product.isFavorite ? 'bg-red-500 text-white' : 'bg-white/80 text-gray-400 hover:text-red-400'
+                        className={`absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 backdrop-blur-md ${
+                            product.isFavorite ? 'bg-red-500 text-white' : 'bg-white/90 text-gray-400 hover:text-red-500'
                         }`}
                       >
                          <Heart size={12} className={product.isFavorite ? 'fill-current' : ''} />
                       </button>
                     </div>
                     
-                    <div className="flex-1 flex flex-col justify-between py-0.5">
+                    <div className="flex-1 flex flex-col justify-between py-1">
                        <div>
-                          <div className="flex items-start justify-between mb-1">
-                            <div className="flex flex-wrap items-center gap-1.5">
+                          <div className="flex items-start justify-between mb-1.5">
+                            <div className="flex flex-wrap items-center gap-2">
                                 {product.isVip && (
-                                    <span className="bg-[#1F2937] text-[#FDE047] text-[8px] px-1 py-0.5 rounded-[4px] font-black italic transform -skew-x-12">VIP</span>
+                                    <span className="bg-gray-900 text-[#FDE047] text-[8px] px-1.5 py-0.5 rounded-[4px] font-black italic transform -skew-x-12">VIP</span>
                                 )}
-                                <h4 className="font-bold text-gray-900 text-sm line-clamp-2 leading-tight">
+                                <h4 className="font-brand-italic text-base text-gray-900 line-clamp-2 leading-tight tracking-tight">
                                     {product.name}
                                 </h4>
                             </div>
-                            
-                            {/* Favorite Icon next to name */}
-                            <button 
-                                onClick={(e) => handleToggleFavorite(e, product)}
-                                className={`ml-2 p-1 rounded-full transition-all active:scale-125 ${
-                                    product.isFavorite ? 'text-red-500' : 'text-gray-200'
-                                }`}
-                            >
-                                <Heart size={14} className={product.isFavorite ? "fill-current" : ""} />
-                            </button>
                           </div>
                           {product.description && (
-                            <p className="text-[10px] text-gray-400 line-clamp-1 leading-relaxed">{product.description}</p>
+                            <p className="text-[10px] text-gray-400 font-bold line-clamp-1 leading-relaxed tracking-tight">{product.description}</p>
                           )}
                        </div>
                        
-                       <div className="flex items-end justify-between mt-2">
-                          <div>
-                             {product.isVip ? (
-                                <div className="flex flex-col items-start">
-                                    <div className="bg-[#1F2937] text-[#FDE047] text-[9px] px-1.5 py-0.5 rounded-[4px] font-bold shadow-sm">¥{product.vipPrice}</div>
-                                    <span className="text-[10px] text-gray-400 mt-0.5 line-through decoration-gray-300">¥{product.price}</span>
-                                </div>
-                             ) : (
-                                <span className="text-base font-bold text-gray-900">¥{product.price}</span>
-                             )}
+                       <div className="flex items-end justify-between mt-3">
+                          <div className="flex items-baseline gap-1">
+                             <span className="text-xs font-black text-gray-400">¥</span>
+                             <span className="text-xl font-mono-numbers font-black text-gray-900">{product.price}</span>
                           </div>
-                          <button onClick={(e) => handleDirectAdd(e, product)} className={`h-6 flex items-center justify-center transition-all active:scale-90 ${product.specs ? 'bg-[#FDE047] px-2.5 rounded-full shadow-sm' : 'w-6 h-6 bg-[#FDE047] rounded-full shadow-sm'}`}>
-                             {product.specs ? <span className="text-[10px] font-bold text-gray-900">选规格</span> : <Plus size={14} className="text-gray-900" />}
+                          <button onClick={(e) => handleDirectAdd(e, product)} className={`h-8 flex items-center justify-center transition-all active:scale-90 shadow-md ${product.specs ? 'bg-[#FDE047] px-4 rounded-xl' : 'w-8 h-8 bg-[#FDE047] rounded-xl'}`}>
+                             {product.specs ? <span className="text-[10px] font-black text-gray-900 tracking-premium">SELECT</span> : <Plus size={16} strokeWidth={3} className="text-gray-900" />}
                           </button>
                        </div>
                     </div>
                  </div>
                )) : (
-                 <div className="flex flex-col items-center justify-center py-20 text-gray-400 gap-3">
-                    <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center">
-                        {showFavoritesOnly ? (
-                            <Heart size={28} className="text-gray-200" />
-                        ) : (
-                            <Search size={28} className="text-gray-200" />
-                        )}
+                 <div className="flex flex-col items-center justify-center py-20 text-gray-400 gap-4">
+                    <div className="w-20 h-20 bg-gray-50 rounded-[2.5rem] flex items-center justify-center border border-gray-100 shadow-inner">
+                        <Search size={32} className="text-gray-200" />
                     </div>
                     <div className="flex flex-col items-center">
-                        <span className="text-sm font-bold text-gray-900 mb-1">
-                            {showFavoritesOnly ? '暂无收藏商品' : '暂无相关商品'}
-                        </span>
-                        <span className="text-xs text-gray-400">
-                            {showFavoritesOnly ? '收藏心仪的商品，点单更方便' : '换个分类看看吧'}
+                        <h4 className="font-brand-italic text-gray-900 text-lg mb-1 tracking-tight italic">
+                            {showFavoritesOnly ? 'No Favorites' : 'Nothing Found'}
+                        </h4>
+                        <span className="text-[10px] font-black text-gray-400 tracking-premium text-center uppercase leading-loose">
+                            {showFavoritesOnly ? 'Save items for quick access' : 'Try a different category'}
                         </span>
                     </div>
-                    {showFavoritesOnly && (
-                        <button 
-                            onClick={() => setShowFavoritesOnly(false)}
-                            className="mt-2 text-xs font-bold text-[#D97706] bg-yellow-50 px-4 py-2 rounded-full border border-yellow-100"
-                        >
-                            查看全部商品
-                        </button>
-                    )}
                  </div>
                )}
              </div>
           </div>
         </div>
         
-        {/* Cart Floating Bar */}
-        <div className="absolute bottom-20 left-4 right-4 z-50 animate-in slide-in-from-bottom-4 duration-300">
-           <div className={`rounded-full p-2 pr-2 shadow-2xl flex items-center justify-between h-14 transition-colors ${cart.length > 0 ? 'bg-gray-900 text-white' : 'bg-black/80 text-gray-400'}`}>
-              <div className="flex items-center gap-3 flex-1 cursor-pointer" onClick={cart.length > 0 ? onCheckout : undefined}>
-                  <div className="relative -ml-1">
-                      <div className={`w-12 h-12 rounded-full flex items-center justify-center border-4 shadow-md z-10 ${cart.length > 0 ? 'bg-[#333] border-[#F3F4F6]' : 'bg-[#222] border-[#444]'}`}>
-                         <ShoppingCart size={20} className={cart.length > 0 ? "text-white" : "text-gray-500"} />
+        <div className="absolute bottom-20 left-4 right-4 z-50 animate-in slide-in-from-bottom-6 duration-700">
+           <div className={`rounded-[2rem] p-2.5 pr-3 shadow-2xl flex items-center justify-between h-16 transition-all duration-500 ${cart.length > 0 ? 'bg-gray-900 translate-y-0' : 'bg-gray-800/80 backdrop-blur-md translate-y-2 opacity-50'}`}>
+              <div className="flex items-center gap-4 flex-1 cursor-pointer pl-2" onClick={cart.length > 0 ? onCheckout : undefined}>
+                  <div className="relative">
+                      <div className={`w-11 h-11 rounded-full flex items-center justify-center border-4 shadow-xl z-10 transition-colors ${cart.length > 0 ? 'bg-gray-800 border-gray-700' : 'bg-gray-700 border-gray-600'}`}>
+                         <ShoppingCart size={20} className={cart.length > 0 ? "text-[#FDE047]" : "text-gray-500"} />
                       </div>
-                      {cartCount > 0 && <div className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-[#333] z-20">{cartCount}</div>}
+                      {cartCount > 0 && <div className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-gray-900 z-20 shadow-lg">{cartCount}</div>}
                   </div>
                   <div className="flex flex-col">
                      {cart.length > 0 ? (
-                        <>
-                            <span className="text-lg font-bold">¥{cartTotal.toFixed(2)}</span>
-                            <span className="text-[10px] text-gray-400 line-through">预估 ¥{(cartTotal * 1.2).toFixed(2)}</span>
-                        </>
-                     ) : <span className="text-sm font-bold">未选购商品</span>}
+                        <div className="flex items-baseline gap-1 text-white">
+                            <span className="text-xs font-black opacity-50">¥</span>
+                            <span className="text-2xl font-mono-numbers font-black tracking-tighter">{cartTotal.toFixed(2)}</span>
+                        </div>
+                     ) : <span className="text-xs font-black text-gray-500 tracking-premium">EMPTY CART</span>}
                   </div>
               </div>
-              <button onClick={onCheckout} disabled={cart.length === 0} className={`px-8 h-10 rounded-full font-bold text-sm transition-colors ${cart.length > 0 ? 'bg-[#FDE047] text-gray-900 hover:bg-yellow-300' : 'bg-gray-700 text-gray-500 cursor-not-allowed'}`}>
-                 {cart.length > 0 ? '去结算' : '¥0起送'}
+              <button 
+                onClick={onCheckout} 
+                disabled={cart.length === 0} 
+                className={`px-10 h-11 rounded-[1.5rem] font-black text-xs tracking-premium transition-all active:scale-95 ${cart.length > 0 ? 'bg-[#FDE047] text-gray-900 shadow-xl shadow-yellow-500/20' : 'bg-gray-700 text-gray-500 cursor-not-allowed'}`}
+              >
+                 CHECKOUT
               </button>
            </div>
         </div>

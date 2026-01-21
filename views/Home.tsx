@@ -1,7 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-// Added Plus to the lucide-react imports
-import { MapPin, ChevronRight, Store, ShoppingBag, Truck, Calendar, Navigation, Phone, QrCode, Bell, Settings, Plus } from 'lucide-react';
+import { MapPin, ChevronRight, ShoppingBag, Truck, Calendar, Phone, QrCode, Bell, Plus, Gift } from 'lucide-react';
 import { ViewState, User, Store as StoreType, Banner, Product } from '../types';
 import { api } from '../services/api';
 import { HomeSkeleton } from '../components/Skeleton';
@@ -31,7 +30,6 @@ export const HomeView: React.FC<HomeProps> = ({ onNavigate }) => {
         setBanners(bannerData);
         setRecommendProducts(productsData);
       } finally {
-        // 模拟稍长一点的加载时间以展示骨架屏
         setTimeout(() => setLoading(false), 800);
       }
     };
@@ -42,19 +40,16 @@ export const HomeView: React.FC<HomeProps> = ({ onNavigate }) => {
 
   return (
     <div className="flex flex-col h-full overflow-y-auto pb-24 bg-[#F8F9FA]">
-      {/* Immersive Header Area */}
       <div className="relative bg-white pt-2 pb-6 px-5 rounded-b-[2.5rem] shadow-[0_10px_30px_-15px_rgba(0,0,0,0.05)] z-10">
-        {/* Animated Background Blob */}
         <div className="absolute -top-24 -right-24 w-64 h-64 bg-yellow-100/40 rounded-full blur-3xl -z-10"></div>
         
-        {/* Top Utility Bar */}
         <div className="flex justify-between items-center mb-6">
            <div className="flex items-center gap-2">
               <div className="w-10 h-10 rounded-full border-2 border-white shadow-md overflow-hidden bg-gray-100">
                   <img src={user?.avatar} className="w-full h-full object-cover" alt="avatar" />
               </div>
               <div className="flex flex-col">
-                 <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest leading-none mb-1">Welcome back</span>
+                 <span className="text-[9px] text-gray-400 font-extrabold tracking-premium leading-none mb-1">Good Day</span>
                  <h1 className="text-lg font-black text-gray-900 leading-none">{user?.name}</h1>
               </div>
            </div>
@@ -68,24 +63,22 @@ export const HomeView: React.FC<HomeProps> = ({ onNavigate }) => {
                 className="flex items-center gap-2 bg-gray-900 text-[#FDE047] px-4 py-2 rounded-full shadow-lg shadow-gray-200 active:scale-95 transition-all"
               >
                 <QrCode size={18} strokeWidth={2.5} />
-                <span className="text-xs font-black">会员码</span>
+                <span className="text-xs font-black tracking-tight">会员码</span>
               </button>
            </div>
         </div>
 
-        {/* Banner Carousel */}
         {banners.length > 0 && (
           <div className="mb-6 group relative h-40 rounded-3xl overflow-hidden shadow-xl ring-1 ring-black/5">
              <img src={banners[0].imageUrl} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt={banners[0].title} />
-             <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
+             <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
              <div className="absolute bottom-4 left-5">
-                <span className="bg-yellow-400 text-gray-900 text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-widest mb-1 inline-block">Trending Now</span>
-                <h2 className="text-white font-black text-lg italic tracking-tight">{banners[0].title}</h2>
+                <span className="bg-yellow-400 text-gray-900 text-[8px] font-black px-2 py-0.5 rounded tracking-premium mb-1 inline-block">Special Offer</span>
+                <h2 className="text-white font-brand-italic text-2xl tracking-tighter">{banners[0].title}</h2>
              </div>
           </div>
         )}
 
-        {/* Main Actions Grid */}
         <div className="grid grid-cols-4 gap-4 px-1">
           <button 
              onClick={() => onNavigate('SCAN_ORDER')} 
@@ -96,8 +89,8 @@ export const HomeView: React.FC<HomeProps> = ({ onNavigate }) => {
                   <QrCode size={32} strokeWidth={2.5} />
               </div>
               <div className="text-left">
-                <span className="block font-black text-2xl text-gray-900 italic tracking-tighter">扫码点餐</span>
-                <span className="block text-[10px] text-yellow-800 font-bold uppercase tracking-widest opacity-60">Scan to order at table</span>
+                <span className="block font-brand-italic text-3xl text-gray-900 tracking-tighter">扫码点餐</span>
+                <span className="block text-[9px] text-yellow-800 font-extrabold tracking-premium opacity-60">Instant table service</span>
               </div>
             </div>
             <div className="w-10 h-10 rounded-full bg-white/40 flex items-center justify-center">
@@ -109,7 +102,7 @@ export const HomeView: React.FC<HomeProps> = ({ onNavigate }) => {
             { id: 'MENU', label: '自取', icon: ShoppingBag, color: 'bg-blue-50', iconColor: 'text-blue-500' },
             { id: 'MENU', label: '外送', icon: Truck, color: 'bg-green-50', iconColor: 'text-green-500' },
             { id: 'RESERVATION', label: '预约', icon: Calendar, color: 'bg-purple-50', iconColor: 'text-purple-500' },
-            { id: 'MENU', label: '堂食', icon: Store, color: 'bg-orange-50', iconColor: 'text-orange-500' }
+            { id: 'POINTS_MALL', label: '商城', icon: Gift, color: 'bg-orange-50', iconColor: 'text-orange-500' }
           ].map((item, idx) => (
             <button 
                key={idx}
@@ -125,29 +118,28 @@ export const HomeView: React.FC<HomeProps> = ({ onNavigate }) => {
         </div>
       </div>
 
-      {/* Store Card Refinement */}
       {store && (
         <div className="mx-5 mt-8 bg-white rounded-[2rem] overflow-hidden shadow-[0_15px_40px_-15px_rgba(0,0,0,0.08)] border border-gray-100 group" onClick={() => onNavigate('STORE_DETAIL')}>
           <div className="h-28 relative overflow-hidden">
-             <img src={store.image} className="w-full h-full object-cover blur-[1px] opacity-40 grayscale" />
+             <img src={store.image} className="w-full h-full object-cover blur-[1px] opacity-40 grayscale" alt="store banner" />
              <div className="absolute inset-0 bg-gradient-to-b from-transparent to-white"></div>
              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-10">
                 <div className="bg-white p-2 rounded-full shadow-lg border-2 border-yellow-400">
                     <MapPin className="text-gray-900" size={24} fill="#FDE047" />
                 </div>
              </div>
-             <div className="absolute top-4 right-4 bg-white/80 backdrop-blur px-3 py-1 rounded-full text-[10px] font-black text-green-600 shadow-sm border border-green-100 uppercase tracking-widest">
+             <div className="absolute top-4 right-4 bg-white/80 backdrop-blur px-3 py-1 rounded-full text-[9px] font-black text-green-600 shadow-sm border border-green-100 tracking-premium">
                 Open Now
              </div>
           </div>
 
           <div className="px-6 pb-6 text-center">
-             <h3 className="font-black text-xl text-gray-900 tracking-tight mb-1">{store.name}</h3>
-             <p className="text-[11px] text-gray-400 font-bold uppercase tracking-[0.2em] mb-5">High quality bakery & drinks</p>
+             <h3 className="font-brand-italic text-2xl text-gray-900 tracking-tighter mb-1">{store.name}</h3>
+             <p className="text-[9px] text-gray-400 font-extrabold tracking-premium mb-5">Artisan Bakery & Coffee Roasters</p>
              
              <div className="flex gap-3">
                 <button className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl bg-gray-50 text-xs font-black text-gray-700 hover:bg-gray-100 active:scale-95 transition-all">
-                   <Phone size={14} /> 联系
+                   <Phone size={14} /> 联系门店
                 </button>
                 <button 
                    onClick={(e) => { e.stopPropagation(); onNavigate('MENU'); }} 
@@ -160,15 +152,14 @@ export const HomeView: React.FC<HomeProps> = ({ onNavigate }) => {
         </div>
       )}
 
-      {/* Refined Recommendations */}
       <div className="mt-10 px-6">
          <div className="flex items-center justify-between mb-5">
              <div>
-                <h3 className="font-black text-xl text-gray-900 tracking-tight leading-none mb-1">今日推荐</h3>
-                <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Today's special picks</span>
+                <h3 className="font-brand-italic text-2xl text-gray-900 tracking-tighter leading-none mb-1">今日推荐</h3>
+                <span className="text-[9px] text-gray-400 font-extrabold tracking-premium">Selected for you</span>
              </div>
-             <button className="text-xs font-black text-gray-400 hover:text-gray-900 flex items-center gap-1 transition-colors uppercase tracking-widest">
-                All <ChevronRight size={12} strokeWidth={3} />
+             <button className="text-[10px] font-extrabold text-gray-400 hover:text-gray-900 flex items-center gap-1 transition-colors tracking-premium">
+                View All <ChevronRight size={12} strokeWidth={3} />
              </button>
          </div>
          
@@ -179,9 +170,9 @@ export const HomeView: React.FC<HomeProps> = ({ onNavigate }) => {
                          <img src={product.image} className="w-full h-full object-cover" alt={product.name} />
                      </div>
                      <div className="px-1">
-                        <div className="font-black text-gray-900 text-sm line-clamp-1 mb-1 italic">{product.name}</div>
+                        <div className="font-brand-italic text-gray-900 text-sm line-clamp-1 mb-1 tracking-tight">{product.name}</div>
                         <div className="flex justify-between items-center mt-2">
-                            <span className="text-base font-black text-gray-900">¥{product.price}</span>
+                            <span className="text-xl font-mono-numbers font-black text-gray-900">¥{product.price}</span>
                             <button className="w-8 h-8 bg-[#FDE047] rounded-xl flex items-center justify-center text-gray-900 shadow-sm shadow-yellow-200 active:scale-90 transition-all">
                                 <Plus size={16} strokeWidth={3} />
                             </button>
