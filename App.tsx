@@ -5,7 +5,7 @@ import { HomeView } from './views/Home';
 import { MenuView } from './views/Menu';
 import { OrdersView } from './views/Orders';
 import { ProfileView } from './views/Profile';
-import { CheckoutView } from './views/Checkout';
+import { CheckoutPage } from './features/checkout/CheckoutPage'; // Changed import
 import { AddressListView } from './views/AddressList';
 import { StoreListView } from './views/StoreList';
 import { OrderDetailView } from './views/OrderDetail';
@@ -91,7 +91,7 @@ const AppContent: React.FC = () => {
       case 'MENU': return <MenuView cart={cart} onAddToCart={addToCart} onRemoveFromCart={removeFromCart} onCheckout={() => setCurrentView('CHECKOUT')} initialDiningMode={initialDiningMode} tableNo={tableNo} />;
       case 'ORDERS': return <OrdersView onSelectOrder={handleOrderSelect} onOrderAgain={handleOrderAgain} />;
       case 'PROFILE': return <ProfileView onNavigate={setCurrentView} />;
-      case 'CHECKOUT': return <CheckoutView cart={cart} onBack={() => setCurrentView('MENU')} initialDiningMode={initialDiningMode} onViewOrder={handleViewCreatedOrder} tableNo={tableNo} />;
+      case 'CHECKOUT': return <CheckoutPage cart={cart} onBack={() => setCurrentView('MENU')} initialDiningMode={initialDiningMode as any} onViewOrder={handleViewCreatedOrder} tableNo={tableNo} />;
       case 'ORDER_DETAIL': return selectedOrder ? <OrderDetailView order={selectedOrder} onBack={() => setCurrentView('ORDERS')} onOrderAgain={() => handleOrderAgain(selectedOrder)} /> : <OrdersView onSelectOrder={handleOrderSelect} onOrderAgain={handleOrderAgain} />;
       case 'ADDRESS_LIST': return <AddressListView onBack={() => setCurrentView('PROFILE')} />;
       case 'STORE_LIST': return <StoreListView onBack={() => setCurrentView('HOME')} onSelect={() => setCurrentView('MENU')} />;
