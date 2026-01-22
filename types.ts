@@ -102,6 +102,8 @@ export interface OrderItem {
   specSnapshot?: string;
 }
 
+export type OrderType = 'Dine In' | 'Pick Up' | 'Delivery' | 'Scan Order';
+
 export interface Order {
   id: string;
   storeId: number;
@@ -112,11 +114,26 @@ export interface Order {
   totalAmount: number;
   payAmount: number;
   discountAmount: number;
-  type: 'Dine In' | 'Pick Up' | 'Delivery' | 'Scan Order';
+  type: OrderType;
   tableNo?: string;
   remark?: string;
   queueNo?: string;
   estimatedTime?: string;
+}
+
+// DTO for Order Creation
+export interface CreateOrderPayloadDTO {
+  storeId: number;
+  type: OrderType;
+  items: Array<{
+    productId: number;
+    name: string;
+    price: number;
+    count: number;
+    specSnapshot?: string;
+  }>;
+  tableNo?: string;
+  couponId?: number;
 }
 
 export interface Banner {

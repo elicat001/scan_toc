@@ -1,6 +1,6 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type { CartItem, Coupon, User } from '../../types';
+import type { CartItem, Coupon, User, CreateOrderPayloadDTO } from '../../types';
 import { api } from '../../services/api';
 import { calcCartTotal, calcGrandTotal } from './checkout.calculation';
 import { mapDiningModeToOrderType } from './checkout.mapping';
@@ -22,8 +22,9 @@ export function useCheckout(params: {
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [selectedCoupon, setSelectedCoupon] = useState<Coupon | null>(null);
   const [payState, setPayState] = useState<PayState>({ status: 'idle' });
-
-  // 用于防止竞态
+  
+  // P0-3: 记录用户是否手动触碰过优惠券
+  const userTouchedCoupon = useRef(false);
   const reqSeq = useRef(0);
 
   useEffect(() => {
@@ -38,10 +39,12 @@ export function useCheckout(params: {
         setUser(u);
         setCoupons(cs);
 
-        // 自动选择最优券：仅在用户未手动操作过时执行（初次加载）
-        const valid = cs.filter(c => c.minSpend <= cartTotal);
-        if (valid.length > 0) {
-          setSelectedCoupon(valid.sort((a, b) => b.amount - a.amount)[0]);
+        // 自动选择最优券：仅在用户未手动操作过时执行
+        if (!userTouchedCoupon.current) {
+            const valid = cs.filter(c => c.minSpend <= cartTotal);
+            if (valid.length > 0) {
+              setSelectedCoupon(valid.sort((a, b) => b.amount - a.amount)[0]);
+            }
         }
       } catch (err) {
         console.error("Failed to load checkout data", err);
@@ -58,6 +61,11 @@ export function useCheckout(params: {
   const validCoupons = useMemo(() => coupons.filter(c => c.minSpend <= cartTotal), [coupons, cartTotal]);
   const invalidCoupons = useMemo(() => coupons.filter(c => c.minSpend > cartTotal), [coupons, cartTotal]);
 
+  const handleSelectCoupon = (coupon: Coupon | null) => {
+    userTouchedCoupon.current = true;
+    setSelectedCoupon(coupon);
+  };
+
   async function pay() {
     if (payState.status === 'creating' || payState.status === 'paying') return;
 
@@ -65,13 +73,22 @@ export function useCheckout(params: {
       setPayState({ status: 'creating' });
       const orderType = mapDiningModeToOrderType(diningMode, tableNo);
 
-      const { success, orderId } = await api.createOrder({
+      // P0-1: 组装强类型 DTO
+      const payload: CreateOrderPayloadDTO = {
         storeId: 1,
-        items: cart,
         type: orderType,
         tableNo: tableNo || undefined,
-        couponId: selectedCoupon?.id
-      });
+        couponId: selectedCoupon?.id,
+        items: cart.map(item => ({
+            productId: item.id,
+            name: item.name,
+            price: item.price,
+            count: item.quantity,
+            specSnapshot: item.selectedSpec ? JSON.stringify(item.selectedSpec) : undefined
+        }))
+      };
+
+      const { success, orderId } = await api.createOrder(payload);
 
       if (!success) throw new Error('订单创建失败，请重试');
 
@@ -92,7 +109,7 @@ export function useCheckout(params: {
     validCoupons,
     invalidCoupons,
     selectedCoupon,
-    setSelectedCoupon,
+    setSelectedCoupon: handleSelectCoupon,
     diningMode,
     setDiningMode,
     paymentMethod,

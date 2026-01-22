@@ -5,7 +5,7 @@ import { HomeView } from './views/Home';
 import { MenuView } from './views/Menu';
 import { OrdersView } from './views/Orders';
 import { ProfileView } from './views/Profile';
-import { CheckoutPage } from './features/checkout/CheckoutPage'; // Changed import
+import { CheckoutPage } from './features/checkout/CheckoutPage'; 
 import { AddressListView } from './views/AddressList';
 import { StoreListView } from './views/StoreList';
 import { OrderDetailView } from './views/OrderDetail';
@@ -18,14 +18,14 @@ import { ReservationView } from './views/Reservation';
 import { StoreDetailView } from './views/StoreDetail';
 import { MemberCodeView } from './views/MemberCode';
 import { ScanOrderView } from './views/ScanOrder';
-import { ViewState, Order, PointsReward } from './types';
+import { ViewState, Order, PointsReward, CartItem } from './types';
 import { api } from './services/api';
 import { ToastProvider } from './components/Toast';
 import { useCart } from './hooks/useCart';
 
 const AppContent: React.FC = () => {
   const [currentView, setCurrentView] = useState<ViewState>('HOME');
-  const { cart, cartCount, cartTotal, addToCart, removeFromCart, clearCart, setCart: setFullCart } = useCart();
+  const { cart, addToCart, removeFromCart, clearCart, setCart: setFullCart } = useCart();
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [selectedReward, setSelectedReward] = useState<PointsReward | null>(null);
   const [initialDiningMode, setInitialDiningMode] = useState<'dine-in' | 'pickup' | 'delivery' | 'scan-order'>('dine-in');
@@ -48,17 +48,19 @@ const AppContent: React.FC = () => {
       }
   };
 
+  // P0-2: 标准化映射逻辑，移除 any 强转
   const handleOrderAgain = (order: Order) => {
-      const newCartItems = order.items.map(item => ({
+      const newCartItems: CartItem[] = order.items.map(item => ({
           id: item.productId,
           categoryId: 0, 
           name: item.name,
           price: item.price,
           image: item.image,
           quantity: item.count,
-          selectedSpec: undefined 
+          description: '',
+          selectedSpec: item.specSnapshot ? JSON.parse(item.specSnapshot) : undefined 
       }));
-      setFullCart(newCartItems as any);
+      setFullCart(newCartItems);
 
       let mode: 'dine-in' | 'pickup' | 'delivery' | 'scan-order' = 'dine-in';
       if (order.type === 'Pick Up') mode = 'pickup';

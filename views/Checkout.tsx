@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { ChevronRight, MoreHorizontal, Check, Wallet, X, Info, Ticket, Loader2, AlertCircle } from 'lucide-react';
-import { CartItem, Coupon, User } from '../types';
+import { CartItem, Coupon, User, OrderType } from '../types';
 import { api } from '../services/api';
 import { Header } from '../components/Header';
 import { useToast } from '../components/Toast';
@@ -80,10 +80,22 @@ export const CheckoutView: React.FC<CheckoutProps> = ({
     
     try {
       // 阶段 1: 创建订单
+      // Fix: map diningMode to OrderType and map cart items to match the expected DTO structure
+      const orderType: OrderType = tableNo ? 'Scan Order' : 
+        diningMode === 'dine-in' ? 'Dine In' :
+        diningMode === 'pickup' ? 'Pick Up' :
+        'Delivery';
+
       const { success, orderId } = await api.createOrder({ 
         storeId: 1, 
-        items: cart, 
-        type: diningMode,
+        items: cart.map(item => ({
+          productId: item.id,
+          name: item.name,
+          price: item.price,
+          count: item.quantity,
+          specSnapshot: item.selectedSpec ? JSON.stringify(item.selectedSpec) : undefined
+        })), 
+        type: orderType,
         tableNo: tableNo || undefined,
         couponId: selectedCoupon?.id
       });
