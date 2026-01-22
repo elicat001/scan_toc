@@ -1,11 +1,10 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type { CartItem, Coupon, User, CreateOrderPayloadDTO } from '../../types';
+import type { CartItem, Coupon, User, CreateOrderPayloadDTO, MoneyCent } from '../../types';
 import { api } from '../../services/api';
-import { calcCartTotal, calcGrandTotal } from './checkout.calculation';
 import { mapDiningModeToOrderType } from './checkout.mapping';
 import { mapCartToOrderItems } from '../../domain/order/mapCartToOrderItems';
-import type { DiningMode, PayState, PaymentMethod } from './checkout.types';
+import type { DiningMode, PayState, PaymentMethod, PayFailReason } from './checkout.types';
 
 export function useCheckout(params: {
   cart: CartItem[];
@@ -14,20 +13,21 @@ export function useCheckout(params: {
 }) {
   const { cart, initialDiningMode, tableNo } = params;
 
-  const cartTotal = useMemo(() => calcCartTotal(cart), [cart]);
+  const cartTotalCent = useMemo(() => {
+    return cart.reduce((sum, item) => sum + item.priceCent * item.quantity, 0);
+  }, [cart]);
 
   const [diningMode, setDiningMode] = useState<DiningMode>(initialDiningMode);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('wechat');
-
   const [user, setUser] = useState<User | null>(null);
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [selectedCoupon, setSelectedCoupon] = useState<Coupon | null>(null);
   const [payState, setPayState] = useState<PayState>({ status: 'idle' });
   
-  // P0-3: 记录用户是否手动触碰过优惠券
   const userTouchedCoupon = useRef(false);
   const reqSeq = useRef(0);
 
+  // Load user profile and coupons with race condition protection
   useEffect(() => {
     let alive = true;
     const seq = ++reqSeq.current;
@@ -40,11 +40,13 @@ export function useCheckout(params: {
         setUser(u);
         setCoupons(cs);
 
-        // 自动选择最优券：仅在用户未手动操作过时执行
+        // Auto-recommend coupon: only if user hasn't manually touched it
         if (!userTouchedCoupon.current) {
-            const valid = cs.filter(c => c.minSpend <= cartTotal);
+            const valid = cs.filter(c => c.minSpendCent <= cartTotalCent);
             if (valid.length > 0) {
-              setSelectedCoupon(valid.sort((a, b) => b.amount - a.amount)[0]);
+              setSelectedCoupon(valid.sort((a, b) => b.amountCent - a.amountCent)[0]);
+            } else {
+              setSelectedCoupon(null);
             }
         }
       } catch (err) {
@@ -53,14 +55,22 @@ export function useCheckout(params: {
     })();
 
     return () => { alive = false; };
-  }, [cartTotal]);
+  }, [cartTotalCent]);
 
   const pricing = useMemo(() => {
-    return calcGrandTotal({ cartTotal, coupon: selectedCoupon, diningMode });
-  }, [cartTotal, selectedCoupon, diningMode]);
+    const discountCent = selectedCoupon ? selectedCoupon.amountCent : 0;
+    const deliveryFeeCent = diningMode === 'delivery' ? 500 : 0; // 5.00 CNY
+    const payableCent = Math.max(0, cartTotalCent - discountCent) + deliveryFeeCent;
+    
+    return { 
+        discountCent, 
+        deliveryFeeCent, 
+        payableCent 
+    };
+  }, [cartTotalCent, selectedCoupon, diningMode]);
 
-  const validCoupons = useMemo(() => coupons.filter(c => c.minSpend <= cartTotal), [coupons, cartTotal]);
-  const invalidCoupons = useMemo(() => coupons.filter(c => c.minSpend > cartTotal), [coupons, cartTotal]);
+  const validCoupons = useMemo(() => coupons.filter(c => c.minSpendCent <= cartTotalCent), [coupons, cartTotalCent]);
+  const invalidCoupons = useMemo(() => coupons.filter(c => c.minSpendCent > cartTotalCent), [coupons, cartTotalCent]);
 
   const handleSelectCoupon = (coupon: Coupon | null) => {
     userTouchedCoupon.current = true;
@@ -68,33 +78,42 @@ export function useCheckout(params: {
   };
 
   async function pay() {
+    // 1. Anti-duplicate protection
     if (payState.status === 'creating' || payState.status === 'paying') return;
 
     try {
       setPayState({ status: 'creating' });
+      
+      // 2. Business Validation (Client Side)
+      if (paymentMethod === 'balance' && user && user.balanceCent < pricing.payableCent) {
+          throw { reason: 'INSUFFICIENT_BALANCE', message: '会员余额不足，请先充值' };
+      }
+
       const orderType = mapDiningModeToOrderType(diningMode, tableNo);
 
-      // P0-1: 组装强类型 DTO，使用统一映射函数
       const payload: CreateOrderPayloadDTO = {
         storeId: 1,
-        type: orderType,
+        type: orderType as any, // Cast to OrderType enum
         tableNo: tableNo || undefined,
         couponId: selectedCoupon?.id,
         items: mapCartToOrderItems(cart)
       };
 
       const { success, orderId } = await api.createOrder(payload);
-
-      if (!success) throw new Error('订单创建失败，请重试');
+      if (!success) throw { reason: 'UNKNOWN', message: '订单创建失败' };
 
       setPayState({ status: 'paying', orderId });
       const paySuccess = await api.payOrder(orderId);
 
-      if (!paySuccess) throw new Error('支付超时或被取消');
+      if (!paySuccess) throw { reason: 'USER_CANCELLED', message: '支付已被取消' };
 
       setPayState({ status: 'success', orderId });
     } catch (e: any) {
-      setPayState({ status: 'failed', message: e.message || '系统异常' });
+      setPayState({ 
+        status: 'failed', 
+        reason: e.reason || 'UNKNOWN', 
+        message: e.message || '系统异常' 
+      });
     }
   }
 
@@ -109,7 +128,7 @@ export function useCheckout(params: {
     setDiningMode,
     paymentMethod,
     setPaymentMethod,
-    cartTotal,
+    cartTotalCent,
     pricing,
     payState,
     pay,

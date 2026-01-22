@@ -10,24 +10,21 @@ interface CouponModalProps {
   invalidCoupons: Coupon[];
   selectedCoupon: Coupon | null;
   onSelectCoupon: (c: Coupon | null) => void;
-  cartTotal: number;
+  cartTotalCent: number;
 }
 
 const PAGE_SIZE = 8;
 
 export const CouponModal: React.FC<CouponModalProps> = ({ 
-  open, onClose, validCoupons, invalidCoupons, selectedCoupon, onSelectCoupon, cartTotal 
+  open, onClose, validCoupons, invalidCoupons, selectedCoupon, onSelectCoupon, cartTotalCent 
 }) => {
   const [displayLimit, setDisplayLimit] = useState(PAGE_SIZE);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
-  // 模拟分页：将有效和无效券合并处理分页逻辑，或者顺序展示
-  // 为了用户体验，通常优先展示有效券
   const totalCouponsCount = validCoupons.length + invalidCoupons.length;
   const hasMore = displayLimit < totalCouponsCount;
 
-  // 根据当前限制计算显示的列表
   const visibleValidCoupons = useMemo(() => {
     return validCoupons.slice(0, displayLimit);
   }, [validCoupons, displayLimit]);
@@ -37,14 +34,12 @@ export const CouponModal: React.FC<CouponModalProps> = ({
     return invalidCoupons.slice(0, remainingLimit);
   }, [invalidCoupons, validCoupons.length, displayLimit]);
 
-  // 当弹窗打开时重置状态
   useEffect(() => {
     if (open) {
       setDisplayLimit(PAGE_SIZE);
     }
   }, [open]);
 
-  // 无限滚动核心逻辑：监测列表底部的 sentinel
   useEffect(() => {
     if (!open || !hasMore || isLoadingMore) return;
 
@@ -66,11 +61,10 @@ export const CouponModal: React.FC<CouponModalProps> = ({
 
   const loadMore = () => {
     setIsLoadingMore(true);
-    // 模拟网络延迟
     setTimeout(() => {
       setDisplayLimit(prev => prev + PAGE_SIZE);
       setIsLoadingMore(false);
-    }, 600);
+    }, 400);
   };
 
   if (!open) return null;
@@ -88,7 +82,6 @@ export const CouponModal: React.FC<CouponModalProps> = ({
         </div>
 
         <div className="p-5 overflow-y-auto flex-1 space-y-5 no-scrollbar">
-          {/* 不使用优惠券选项 */}
           <div 
             onClick={() => { onSelectCoupon(null); onClose(); }}
             className={`p-4 rounded-2xl border-2 transition-all flex justify-between items-center ${selectedCoupon === null ? 'border-gray-900 bg-gray-900 text-white' : 'bg-white border-transparent text-gray-400'}`}
@@ -97,7 +90,6 @@ export const CouponModal: React.FC<CouponModalProps> = ({
             {selectedCoupon === null && <Check size={18} />}
           </div>
 
-          {/* 可用优惠券部分 */}
           {visibleValidCoupons.length > 0 && (
             <div className="space-y-3">
               <div className="text-[10px] text-gray-400 font-black uppercase tracking-widest pl-1">
@@ -111,19 +103,18 @@ export const CouponModal: React.FC<CouponModalProps> = ({
                 >
                   <div className="w-24 bg-yellow-400/10 flex flex-col items-center justify-center border-r border-dashed border-gray-200 flex-shrink-0">
                     <div className="text-yellow-700 font-black flex items-baseline">
-                      <span className="text-xs">¥</span><span className="text-2xl">{coupon.amount}</span>
+                      <span className="text-xs">¥</span><span className="text-2xl">{coupon.amountCent / 100}</span>
                     </div>
                   </div>
                   <div className="flex-1 p-4 min-w-0">
                     <h4 className="font-bold text-sm text-gray-900 truncate">{coupon.name}</h4>
-                    <p className="text-[10px] text-gray-400 mt-1">满 {coupon.minSpend} 可用</p>
+                    <p className="text-[10px] text-gray-400 mt-1">满 {coupon.minSpendCent / 100} 可用</p>
                   </div>
                 </div>
               ))}
             </div>
           )}
 
-          {/* 不可用优惠券部分 */}
           {visibleInvalidCoupons.length > 0 && (
             <div className="space-y-3">
               <div className="text-[10px] text-gray-400 font-black uppercase tracking-widest pl-1">
@@ -134,12 +125,12 @@ export const CouponModal: React.FC<CouponModalProps> = ({
                   <div key={coupon.id} className="bg-white rounded-2xl overflow-hidden flex shadow-sm">
                     <div className="w-24 bg-gray-100 flex flex-col items-center justify-center flex-shrink-0">
                       <div className="text-gray-400 font-black flex items-baseline">
-                        <span className="text-xs">¥</span><span className="text-2xl">{coupon.amount}</span>
+                        <span className="text-xs">¥</span><span className="text-2xl">{coupon.amountCent / 100}</span>
                       </div>
                     </div>
                     <div className="flex-1 p-4 min-w-0">
                       <h4 className="font-bold text-sm text-gray-400 truncate">{coupon.name}</h4>
-                      <p className="text-[9px] text-red-400 mt-1">还差 ¥{(coupon.minSpend - cartTotal).toFixed(2)}</p>
+                      <p className="text-[9px] text-red-400 mt-1">还差 ¥{((coupon.minSpendCent - cartTotalCent) / 100).toFixed(2)}</p>
                     </div>
                   </div>
                 ))}
@@ -147,7 +138,6 @@ export const CouponModal: React.FC<CouponModalProps> = ({
             </div>
           )}
 
-          {/* 滚动监听锚点 */}
           <div ref={sentinelRef} className="h-10 flex items-center justify-center">
             {isLoadingMore && (
               <div className="flex items-center gap-2 text-gray-400 text-xs font-bold">

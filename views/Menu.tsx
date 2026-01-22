@@ -9,7 +9,7 @@ import { useToast } from '../components/Toast';
 interface MenuProps {
   cart: CartItem[];
   onAddToCart: (product: Product, quantity: number, specs?: Record<string, string>) => void;
-  onRemoveFromCart: (productId: number) => void;
+  onRemoveFromCart: (cartLineId: string) => void;
   onCheckout: () => void;
   initialDiningMode?: 'dine-in' | 'pickup' | 'delivery' | 'scan-order';
   tableNo?: string | null;
@@ -41,7 +41,7 @@ export const MenuView: React.FC<MenuProps> = ({
     api.getProducts(activeCategory).then(setProducts);
   }, [activeCategory]);
 
-  const cartTotal = useMemo(() => cart.reduce((sum, item) => sum + item.price * item.quantity, 0), [cart]);
+  const cartTotal = useMemo(() => cart.reduce((sum, item) => sum + (item.priceCent / 100) * item.quantity, 0), [cart]);
   const cartCount = useMemo(() => cart.reduce((sum, item) => sum + item.quantity, 0), [cart]);
 
   const handleOpenProduct = (product: Product) => {
@@ -193,7 +193,7 @@ export const MenuView: React.FC<MenuProps> = ({
                        <div className="flex items-end justify-between mt-3">
                           <div className="flex items-baseline gap-1">
                              <span className="text-xs font-black text-gray-400">¥</span>
-                             <span className="text-xl font-mono-numbers font-black text-gray-900">{product.price}</span>
+                             <span className="text-xl font-mono-numbers font-black text-gray-900">{(product.priceCent / 100).toFixed(2)}</span>
                           </div>
                           <button onClick={(e) => handleDirectAdd(e, product)} className={`h-8 flex items-center justify-center transition-all active:scale-90 shadow-md ${product.specs ? 'bg-[#FDE047] px-4 rounded-xl' : 'w-8 h-8 bg-[#FDE047] rounded-xl'}`}>
                              {product.specs ? <span className="text-[10px] font-black text-gray-900 tracking-premium">选规格</span> : <Plus size={16} strokeWidth={3} className="text-gray-900" />}

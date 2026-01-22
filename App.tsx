@@ -55,9 +55,9 @@ const AppContent: React.FC = () => {
       setFullCart(newCartItems);
 
       let mode: 'dine-in' | 'pickup' | 'delivery' | 'scan-order' = 'dine-in';
-      if (order.type === 'Pick Up') mode = 'pickup';
-      if (order.type === 'Delivery') mode = 'delivery';
-      if (order.type === 'Scan Order') {
+      if (order.type === 'PICKUP') mode = 'pickup';
+      if (order.type === 'DELIVERY') mode = 'delivery';
+      if (order.type === 'SCAN_ORDER') {
           mode = 'scan-order';
           setTableNo(order.tableNo || 'A-01');
       }

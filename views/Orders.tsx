@@ -51,11 +51,11 @@ export const OrdersView: React.FC<OrdersProps> = ({ onSelectOrder, onOrderAgain 
         order.id.includes(searchQuery) || 
         order.storeName.includes(searchQuery);
       
-      // 类型过滤映射
+      // 类型过滤映射 - Fix comparison with OrderType enum values
       const matchesType = typeFilter === '全部' || 
-        (typeFilter === '堂食' && (order.type === 'Dine In' || order.type === 'Scan Order')) ||
-        (typeFilter === '自取' && order.type === 'Pick Up') ||
-        (typeFilter === '配送' && order.type === 'Delivery');
+        (typeFilter === '堂食' && (order.type === 'DINE_IN' || order.type === 'SCAN_ORDER')) ||
+        (typeFilter === '自取' && order.type === 'PICKUP') ||
+        (typeFilter === '配送' && order.type === 'DELIVERY');
 
       // 状态过滤映射
       const matchesStatus = statusFilter === '全部' ||
@@ -237,7 +237,7 @@ export const OrdersView: React.FC<OrdersProps> = ({ onSelectOrder, onOrderAgain 
                   <span className="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-1">Order Total</span>
                   <div className="flex items-baseline gap-1">
                       <span className="text-xs font-black text-gray-900">¥</span>
-                      <span className="text-xl font-black text-gray-900 tracking-tighter">{order.totalAmount.toFixed(2)}</span>
+                      <span className="text-xl font-black text-gray-900 tracking-tighter">{(order.totalAmountCent / 100).toFixed(2)}</span>
                   </div>
                </div>
                

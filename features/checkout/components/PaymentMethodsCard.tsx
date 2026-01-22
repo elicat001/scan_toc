@@ -13,7 +13,7 @@ interface PaymentMethodsCardProps {
 export const PaymentMethodsCard: React.FC<PaymentMethodsCardProps> = ({ user, paymentMethod, onChange }) => {
   const methods = [
     { id: 'wechat', label: '微信支付', icon: '🟢', color: 'bg-green-500' },
-    { id: 'balance', label: '余额支付', icon: '💰', sub: `余额: ¥${user?.balance.toFixed(2) || 0}`, color: 'bg-gray-200' }
+    { id: 'balance', label: '余额支付', icon: '💰', sub: `余额: ¥${((user?.balanceCent || 0) / 100).toFixed(2)}`, color: 'bg-gray-200' }
   ];
 
   return (

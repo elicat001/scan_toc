@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { RefreshCw, Wallet, CreditCard, HelpCircle } from 'lucide-react';
 import { User } from '../types';
@@ -65,7 +66,7 @@ export const MemberCodeView: React.FC<MemberCodeProps> = ({ onBack, onTopUp }) =
                  </div>
                  <div className="text-right">
                      <div className="text-[10px] text-gray-400">当前余额</div>
-                     <div className="font-bold text-xl font-mono leading-none">¥{user.balance.toFixed(2)}</div>
+                     <div className="font-bold text-xl font-mono leading-none">¥{(user.balanceCent / 100).toFixed(2)}</div>
                  </div>
               </div>
 

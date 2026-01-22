@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { X, Heart, Minus, Plus } from 'lucide-react';
 import { Product } from '../types';
@@ -48,9 +49,9 @@ export const ProductModal: React.FC<ProductModalProps> = ({
     onClose();
   };
 
-  const currentPrice = product.isVip ? (product.vipPrice || product.price) : product.price;
-  const totalPrice = (currentPrice * quantity).toFixed(2);
-  const originalTotal = (product.price * quantity).toFixed(2);
+  const currentPriceCent = product.isVip ? (product.vipPriceCent || product.priceCent) : product.priceCent;
+  const totalPrice = ( (currentPriceCent / 100) * quantity).toFixed(2);
+  const originalTotal = ( (product.priceCent / 100) * quantity).toFixed(2);
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center" style={{ zIndex: 9999 }}>

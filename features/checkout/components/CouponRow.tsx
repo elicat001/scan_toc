@@ -23,7 +23,7 @@ export const CouponRow: React.FC<CouponRowProps> = ({ selectedCoupon, validCount
       <div className="flex items-center text-xs font-black">
         {selectedCoupon ? (
           <div className="flex items-center gap-2 bg-[#D97706]/10 px-3 py-1 rounded-full text-[#D97706]">
-            <span>-¥{selectedCoupon.amount}</span>
+            <span>-¥{(selectedCoupon.amountCent / 100).toFixed(2)}</span>
             <span className="text-[8px] bg-[#D97706] text-white px-1 rounded italic uppercase">{selectedCoupon.name}</span>
           </div>
         ) : (

@@ -211,7 +211,7 @@ export const OrderDetailView: React.FC<OrderDetailProps> = ({ order: initialOrde
               <div className="flex items-center gap-2 mt-1.5">
                   <span className="text-[10px] opacity-60 font-bold uppercase tracking-wider">订单号.</span>
                   <span className="text-[10px] font-black font-mono">{order.id}</span>
-                  <Copy size={10} className="opacity-40 hover:opacity-100 cursor-pointer" />
+                  <button onClick={() => {}} className="p-1"><Copy size={10} className="opacity-40 hover:opacity-100 cursor-pointer" /></button>
               </div>
             </div>
             
@@ -287,7 +287,7 @@ export const OrderDetailView: React.FC<OrderDetailProps> = ({ order: initialOrde
                             <div className="flex-1 min-w-0 flex flex-col justify-center">
                                 <div className="flex justify-between items-start mb-1">
                                     <h4 className="font-bold text-sm text-gray-900 truncate pr-2 tracking-tight">{item.name}</h4>
-                                    <span className="font-bold text-sm text-gray-900">¥{item.price.toFixed(2)}</span>
+                                    <span className="font-bold text-sm text-gray-900">¥{(item.priceCent / 100).toFixed(2)}</span>
                                 </div>
                                 <div className="flex justify-between items-center">
                                     <span className="text-[10px] text-gray-400 font-black uppercase tracking-widest">{item.specSnapshot || '标准规格'}</span>
@@ -312,13 +312,13 @@ export const OrderDetailView: React.FC<OrderDetailProps> = ({ order: initialOrde
                     <div className="space-y-3 mb-6">
                         <div className="flex justify-between text-xs text-gray-400 font-bold uppercase tracking-widest">
                             <span>小计金额</span>
-                            <span>¥{order.totalAmount.toFixed(2)}</span>
+                            <span>¥{(order.totalAmountCent / 100).toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between text-xs text-gray-400 font-bold uppercase tracking-widest">
                             <span>优惠活动</span>
-                            <span className="text-red-500">-¥{order.discountAmount.toFixed(2)}</span>
+                            <span className="text-red-500">-¥{(order.discountAmountCent / 100).toFixed(2)}</span>
                         </div>
-                        {order.type === 'Delivery' && (
+                        {order.type === 'DELIVERY' && (
                              <div className="flex justify-between text-xs text-gray-400 font-bold uppercase tracking-widest">
                                 <span>配送费</span>
                                 <span>¥0.00</span>
@@ -331,13 +331,13 @@ export const OrderDetailView: React.FC<OrderDetailProps> = ({ order: initialOrde
                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-0.5">实付合计</span>
                            <div className="flex items-baseline gap-1">
                                <span className="text-xs font-black text-gray-900">人民币</span>
-                               <span className="text-3xl font-black text-gray-900 tracking-tighter italic">¥{order.payAmount.toFixed(2)}</span>
+                               <span className="text-3xl font-black text-gray-900 tracking-tighter italic">¥{(order.payAmountCent / 100).toFixed(2)}</span>
                            </div>
                         </div>
                         <div className="flex flex-col items-end">
                             <div className="flex gap-1 mb-1">
                                 <div className="w-3 h-3 bg-[#FDE047] rounded-full flex items-center justify-center text-gray-900 text-[8px] font-black">章</div>
-                                <span className="text-[9px] font-black text-gray-900">+{Math.ceil(order.payAmount / 10)} 积分</span>
+                                <span className="text-[9px] font-black text-gray-900">+{Math.ceil( (order.payAmountCent / 100) / 10)} 积分</span>
                             </div>
                             <span className="text-[8px] text-gray-400 font-bold uppercase tracking-[0.15em]">交易已核实</span>
                         </div>
@@ -361,7 +361,9 @@ export const OrderDetailView: React.FC<OrderDetailProps> = ({ order: initialOrde
                     <div className="space-y-5">
                         <div className="flex justify-between items-center">
                             <span className="text-[10px] text-gray-500 font-black uppercase tracking-widest">履行方式</span>
-                            <span className="text-xs text-gray-900 font-black">{order.type === 'Pick Up' ? '门店自取' : order.type === 'Dine In' ? '店内堂食' : order.type === 'Scan Order' ? '扫码堂食' : '外卖配送'}</span>
+                            <span className="text-xs text-gray-900 font-black">
+                                {order.type === 'PICKUP' ? '门店自取' : order.type === 'DINE_IN' ? '店内堂食' : order.type === 'SCAN_ORDER' ? '扫码堂食' : '外卖配送'}
+                            </span>
                         </div>
                         <div className="flex justify-between items-center">
                             <span className="text-[10px] text-gray-500 font-black uppercase tracking-widest">商家电话</span>

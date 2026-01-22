@@ -3,13 +3,13 @@ import type { CartItem, Coupon } from '../../types';
 import type { DiningMode } from './checkout.types';
 
 export function calcCartTotal(cart: CartItem[]): number {
-  return cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  return cart.reduce((sum, item) => sum + (item.priceCent / 100) * item.quantity, 0);
 }
 
 export function calcCouponDiscount(cartTotal: number, coupon: Coupon | null): number {
   if (!coupon) return 0;
   // 此处可扩展：根据 coupon.type 处理百分比折扣或固定减免
-  return Math.max(0, coupon.amount);
+  return Math.max(0, coupon.amountCent / 100);
 }
 
 export function calcDeliveryFee(mode: DiningMode, cartTotal: number): number {

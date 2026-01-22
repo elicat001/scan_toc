@@ -1,10 +1,6 @@
 
-// Standard API Response Wrapper
-export interface ApiResponse<T> {
-  code: number;
-  msg: string;
-  data: T;
-}
+// Money in cent (integer) is standard for fintech/e-commerce to avoid float precision issues.
+export type MoneyCent = number;
 
 export interface User {
   id: string;
@@ -12,43 +8,16 @@ export interface User {
   phone: string;
   avatar: string;
   points: number;
-  balance: number;
+  balanceCent: MoneyCent; // Renamed for clarity
   coupons: number;
   memberCode: string;
   isVip: boolean;
+  // Added missing fields for UserProfile view
+  gender?: number; 
   birthday?: string;
-  gender?: number; // 0: unknown, 1: male, 2: female
 }
 
-export interface Address {
-  id: string;
-  contact: string;
-  phone: string;
-  province?: string;
-  city?: string;
-  district?: string;
-  location: string; // Address line 1
-  detail: string;   // Address line 2
-  tag: string;      // e.g., 'Home', 'Company'
-  isDefault: boolean;
-  latitude?: number;
-  longitude?: number;
-}
-
-export interface Store {
-  id: number;
-  name: string;
-  distance: string; // Formatted string from backend or calculated on client
-  address: string;
-  image: string;
-  tags: string[];
-  status: 'OPEN' | 'CLOSED';
-  latitude?: number;
-  longitude?: number;
-  phone?: string;
-  businessHours?: string;
-}
-
+// Added missing ProductSpec interface
 export interface ProductSpec {
   name: string;
   options: string[];
@@ -59,38 +28,27 @@ export interface Product {
   categoryId: number;
   name: string;
   description?: string;
-  price: number;
+  priceCent: MoneyCent; // Use cents
   image: string;
-  originalPrice?: number;
-  tags?: string[];
-  isVip?: boolean;
-  vipPrice?: number;
   specs?: ProductSpec[];
-  sales?: number;
-  stock?: number;
-  status?: number; // 1: on_sale, 0: off_shelf
+  isVip?: boolean;
+  vipPriceCent?: MoneyCent;
   isFavorite?: boolean;
 }
 
-export interface Category {
-  id: number;
-  name: string;
-  icon?: string;
-  sort?: number;
-}
-
 export interface CartItem extends Product {
+  cartLineId: string; // Unique ID for this line (productId + specs)
   quantity: number;
   selectedSpec?: Record<string, string>; 
 }
 
 export enum OrderStatus {
-  PENDING = '待支付',
-  PAID = '已支付',
-  PREPARING = '制作中',
-  DELIVERING = '配送中',
-  COMPLETED = '已完成',
-  CANCELLED = '已取消'
+  PENDING = 'PENDING',
+  PAID = 'PAID',
+  PREPARING = 'PREPARING',
+  DELIVERING = 'DELIVERING',
+  COMPLETED = 'COMPLETED',
+  CANCELLED = 'CANCELLED'
 }
 
 export interface OrderItem {
@@ -98,11 +56,11 @@ export interface OrderItem {
   name: string;
   image: string;
   count: number;
-  price: number;
+  priceCent: MoneyCent;
   specSnapshot?: string;
 }
 
-export type OrderType = 'Dine In' | 'Pick Up' | 'Delivery' | 'Scan Order';
+export type OrderType = 'DINE_IN' | 'PICKUP' | 'DELIVERY' | 'SCAN_ORDER';
 
 export interface Order {
   id: string;
@@ -111,24 +69,21 @@ export interface Order {
   status: OrderStatus;
   createTime: string;
   items: OrderItem[];
-  totalAmount: number;
-  payAmount: number;
-  discountAmount: number;
+  totalAmountCent: MoneyCent;
+  payAmountCent: MoneyCent;
+  discountAmountCent: MoneyCent;
   type: OrderType;
   tableNo?: string;
-  remark?: string;
   queueNo?: string;
-  estimatedTime?: string;
 }
 
-// DTO for Order Creation
 export interface CreateOrderPayloadDTO {
   storeId: number;
   type: OrderType;
   items: Array<{
     productId: number;
     name: string;
-    price: number;
+    priceCent: MoneyCent;
     count: number;
     specSnapshot?: string;
   }>;
@@ -136,56 +91,79 @@ export interface CreateOrderPayloadDTO {
   couponId?: number;
 }
 
-export interface Banner {
-  id: number;
-  imageUrl: string;
-  linkUrl?: string;
-  title?: string;
-}
-
 export interface Coupon {
   id: number;
   name: string;
-  amount: number;
-  minSpend: number;
-  type: 'DISCOUNT' | 'CASH';
+  amountCent: MoneyCent;
+  minSpendCent: MoneyCent;
   expireDate: string;
 }
 
-export interface PointRecord {
+// Added missing Category interface
+export interface Category {
   id: number;
+  name: string;
+  icon: string;
+}
+
+// Added missing Store interface
+export interface Store {
+  id: number;
+  name: string;
+  address: string;
+  distance: string;
+  image: string;
+  tags: string[];
+  status: 'OPEN' | 'CLOSED';
+  businessHours: string;
+}
+
+// Added missing Banner interface
+export interface Banner {
+  id: number;
+  imageUrl: string;
   title: string;
-  amount: number; // Positive for earn, negative for spend
+}
+
+// Added missing Address interface
+export interface Address {
+  id: string;
+  location: string;
+  detail: string;
+  contact: string;
+  phone: string;
+  tag?: string;
+  isDefault?: boolean;
+}
+
+// Added missing PointRecord interface
+export interface PointRecord {
+  id: string;
+  title: string;
+  amount: number;
   createTime: string;
-  type: 'EARN' | 'SPEND';
 }
 
+// Added missing PointsReward interface
 export interface PointsReward {
-    id: number;
-    name: string;
-    points: number;
-    image: string;
-    type: 'COUPON' | 'DRINK' | 'GIFT';
-    description?: string;
-    rules?: string[];
+  id: number;
+  name: string;
+  points: number;
+  image: string;
+  type: 'COUPON' | 'DRINK' | 'GIFT';
+  description?: string;
+  rules?: string[];
 }
 
-// View States for Routing
+// Added missing ApiResponse interface
+export interface ApiResponse<T> {
+  code: number;
+  msg: string;
+  data: T;
+}
+
+// Updated ViewState to include all possible views
 export type ViewState = 
-  | 'HOME' 
-  | 'MENU' 
-  | 'ORDERS' 
-  | 'PROFILE' 
-  | 'CHECKOUT' 
-  | 'ADDRESS_LIST' 
-  | 'STORE_LIST' 
-  | 'ORDER_DETAIL'
-  | 'USER_PROFILE'
-  | 'MEMBER_TOPUP'
-  | 'POINTS_MALL'
-  | 'POINTS_HISTORY'
-  | 'POINTS_ITEM_DETAIL'
-  | 'RESERVATION'
-  | 'STORE_DETAIL'
-  | 'MEMBER_CODE'
-  | 'SCAN_ORDER';
+  | 'HOME' | 'MENU' | 'ORDERS' | 'PROFILE' | 'CHECKOUT' 
+  | 'ORDER_DETAIL' | 'MEMBER_TOPUP' | 'POINTS_MALL' | 'SCAN_ORDER' | 'RESERVATION'
+  | 'ADDRESS_LIST' | 'STORE_LIST' | 'USER_PROFILE' | 'POINTS_HISTORY' | 'POINTS_ITEM_DETAIL' | 'STORE_DETAIL' | 'MEMBER_CODE';

@@ -41,7 +41,7 @@ export const ProfileView: React.FC<ProfileProps> = ({ onNavigate }) => {
                   <p className="text-sm text-gray-700 font-mono">{user?.phone}</p>
                </div>
             </div>
-            <div className="bg-white/40 backdrop-blur-sm p-2 rounded-lg cursor-pointer hover:bg-white/60 transition-colors">
+            <div className="bg-white/40 backdrop-blur-sm p-2 rounded-lg cursor-pointer hover:bg-white/60 transition-colors" onClick={() => onNavigate('MEMBER_CODE')}>
                <QrCode size={24} className="text-gray-900" />
             </div>
          </div>
@@ -54,7 +54,7 @@ export const ProfileView: React.FC<ProfileProps> = ({ onNavigate }) => {
             </div>
             <div className="flex flex-col gap-1 items-center border-l border-gray-100 cursor-pointer active:opacity-60" onClick={() => onNavigate('MEMBER_TOPUP')}>
                <span className="text-gray-500 font-medium text-xs mb-1">余额</span>
-               <span className="text-xl font-bold text-gray-900">{(user?.balance || 0).toFixed(2)}</span>
+               <span className="text-xl font-bold text-gray-900">{( (user?.balanceCent || 0) / 100).toFixed(2)}</span>
             </div>
             <div className="flex flex-col gap-1 items-center border-l border-gray-100 cursor-pointer active:opacity-60">
                <span className="text-gray-500 font-medium text-xs mb-1">优惠券</span>

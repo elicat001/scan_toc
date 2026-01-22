@@ -172,7 +172,7 @@ export const HomeView: React.FC<HomeProps> = ({ onNavigate }) => {
                      <div className="px-1">
                         <div className="font-brand-italic text-gray-900 text-sm line-clamp-1 mb-1 tracking-tight">{product.name}</div>
                         <div className="flex justify-between items-center mt-2">
-                            <span className="text-xl font-mono-numbers font-black text-gray-900">¥{product.price}</span>
+                            <span className="text-xl font-mono-numbers font-black text-gray-900">¥{(product.priceCent / 100).toFixed(2)}</span>
                             <button className="w-8 h-8 bg-[#FDE047] rounded-xl flex items-center justify-center text-gray-900 shadow-sm shadow-yellow-200 active:scale-90 transition-all">
                                 <Plus size={16} strokeWidth={3} />
                             </button>

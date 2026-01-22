@@ -3,20 +3,22 @@ import React from 'react';
 import { Loader2 } from 'lucide-react';
 
 interface BottomPayBarProps {
-  payable: number;
+  payableCent: number;
   processing: boolean;
   onPay: () => void;
   statusText?: string;
 }
 
-export const BottomPayBar: React.FC<BottomPayBarProps> = ({ payable, processing, onPay, statusText }) => {
+export const BottomPayBar: React.FC<BottomPayBarProps> = ({ payableCent, processing, onPay, statusText }) => {
+  const displayAmount = (payableCent / 100).toFixed(2);
+
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-3xl p-6 border-t border-gray-100 flex items-center justify-between pb-safe max-w-md mx-auto z-50 shadow-[0_-15px_40px_rgba(0,0,0,0.08)]">
       <div className="flex flex-col">
         <span className="text-[9px] text-gray-400 font-black uppercase tracking-[0.2em] block mb-1">应付总额</span>
         <div className="text-3xl font-black text-gray-900 italic tracking-tighter flex items-baseline gap-0.5">
             <span className="text-xs font-black not-italic">¥</span>
-            {payable.toFixed(2)}
+            {displayAmount}
         </div>
       </div>
       
