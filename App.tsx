@@ -22,6 +22,7 @@ import { ViewState, Order, PointsReward, CartItem } from './types';
 import { api } from './services/api';
 import { ToastProvider } from './components/Toast';
 import { useCart } from './hooks/useCart';
+import { mapOrderItemsToCart } from './domain/order/mapCartToOrderItems';
 
 const AppContent: React.FC = () => {
   const [currentView, setCurrentView] = useState<ViewState>('HOME');
@@ -48,18 +49,9 @@ const AppContent: React.FC = () => {
       }
   };
 
-  // P0-2: 标准化映射逻辑，移除 any 强转
+  // P0-2: 标准化映射逻辑，使用 mapOrderItemsToCart 消除 any 强转
   const handleOrderAgain = (order: Order) => {
-      const newCartItems: CartItem[] = order.items.map(item => ({
-          id: item.productId,
-          categoryId: 0, 
-          name: item.name,
-          price: item.price,
-          image: item.image,
-          quantity: item.count,
-          description: '',
-          selectedSpec: item.specSnapshot ? JSON.parse(item.specSnapshot) : undefined 
-      }));
+      const newCartItems = mapOrderItemsToCart(order.items);
       setFullCart(newCartItems);
 
       let mode: 'dine-in' | 'pickup' | 'delivery' | 'scan-order' = 'dine-in';

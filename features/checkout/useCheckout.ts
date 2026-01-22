@@ -4,6 +4,7 @@ import type { CartItem, Coupon, User, CreateOrderPayloadDTO } from '../../types'
 import { api } from '../../services/api';
 import { calcCartTotal, calcGrandTotal } from './checkout.calculation';
 import { mapDiningModeToOrderType } from './checkout.mapping';
+import { mapCartToOrderItems } from '../../domain/order/mapCartToOrderItems';
 import type { DiningMode, PayState, PaymentMethod } from './checkout.types';
 
 export function useCheckout(params: {
@@ -73,19 +74,13 @@ export function useCheckout(params: {
       setPayState({ status: 'creating' });
       const orderType = mapDiningModeToOrderType(diningMode, tableNo);
 
-      // P0-1: 组装强类型 DTO
+      // P0-1: 组装强类型 DTO，使用统一映射函数
       const payload: CreateOrderPayloadDTO = {
         storeId: 1,
         type: orderType,
         tableNo: tableNo || undefined,
         couponId: selectedCoupon?.id,
-        items: cart.map(item => ({
-            productId: item.id,
-            name: item.name,
-            price: item.price,
-            count: item.quantity,
-            specSnapshot: item.selectedSpec ? JSON.stringify(item.selectedSpec) : undefined
-        }))
+        items: mapCartToOrderItems(cart)
       };
 
       const { success, orderId } = await api.createOrder(payload);
