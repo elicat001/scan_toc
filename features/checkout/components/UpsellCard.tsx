@@ -15,18 +15,18 @@ export const UpsellCard: React.FC = () => {
           <h4 className="font-black text-[#FDE047] text-sm italic tracking-tight">充值更划算</h4>
         </div>
         <button className="text-[10px] text-[#FDE047] font-black uppercase tracking-widest flex items-center gap-1">
-          Details <ChevronRight size={12} />
+          查看详情 <ChevronRight size={12} />
         </button>
       </div>
 
       <div className="flex gap-3">
         <div className="flex-1 bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10 active:scale-95 transition-transform cursor-pointer">
-          <div className="text-[10px] font-black text-[#FDE047] opacity-60 uppercase mb-1">Pop Offer</div>
+          <div className="text-[10px] font-black text-[#FDE047] opacity-60 uppercase mb-1">热门推荐</div>
           <div className="text-xl font-black text-white italic">¥200.00</div>
           <div className="text-[9px] text-white/50 font-bold mt-1">送 15.00 元</div>
         </div>
         <div className="flex-1 bg-white/5 backdrop-blur-md rounded-2xl p-4 border border-white/5 opacity-60 active:scale-95 transition-transform cursor-pointer">
-          <div className="text-[10px] font-black text-white/40 uppercase mb-1">Standard</div>
+          <div className="text-[10px] font-black text-white/40 uppercase mb-1">基础充值</div>
           <div className="text-xl font-black text-white italic">¥100.00</div>
           <div className="text-[9px] text-white/30 font-bold mt-1">无赠送</div>
         </div>

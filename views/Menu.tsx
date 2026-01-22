@@ -81,17 +81,17 @@ export const MenuView: React.FC<MenuProps> = ({
         <div className="flex items-center justify-between mb-3">
           <div className="flex-1 min-w-0">
             <h2 className="text-lg font-black flex items-center text-gray-900 truncate tracking-tight">
-              {storeInfo?.name || 'Loading...'} <ChevronRight size={18} className="mt-0.5 ml-1 flex-shrink-0" />
+              {storeInfo?.name || '加载中...'} <ChevronRight size={18} className="mt-0.5 ml-1 flex-shrink-0" />
             </h2>
             {tableNo ? (
               <div className="flex items-center gap-1.5 mt-1 text-[#D97706] font-black">
                  <div className="w-1.5 h-1.5 bg-[#D97706] rounded-full animate-pulse"></div>
-                 <span className="text-[10px] tracking-premium uppercase">Table {tableNo} Ordering</span>
+                 <span className="text-[10px] tracking-premium uppercase">正在点餐：{tableNo} 桌</span>
               </div>
             ) : (
               <p className="text-[10px] text-gray-500 mt-1 flex items-center gap-1 font-bold">
                 <MapPin size={10} />
-                <span className="bg-gray-100 px-1.5 py-0.5 rounded text-gray-600 tracking-tight">{storeInfo?.distance} away</span>
+                <span className="bg-gray-100 px-1.5 py-0.5 rounded text-gray-600 tracking-tight">距离您 {storeInfo?.distance}</span>
               </p>
             )}
           </div>
@@ -109,7 +109,7 @@ export const MenuView: React.FC<MenuProps> = ({
                 ))}
               </>
             ) : (
-              <div className="px-4 py-1.5 rounded-full text-[11px] font-black bg-gray-900 text-white tracking-widest">SCAN ORDER</div>
+              <div className="px-4 py-1.5 rounded-full text-[11px] font-black bg-gray-900 text-white tracking-widest">扫码点餐</div>
             )}
           </div>
         </div>
@@ -124,11 +124,11 @@ export const MenuView: React.FC<MenuProps> = ({
             }`}
           >
              <Heart size={10} className={showFavoritesOnly ? "fill-current" : ""} /> 
-             FAVORITES
+             我的收藏
           </button>
           <div className="w-[1px] h-3 bg-gray-200 mx-1"></div>
           <span className="text-[9px] text-[#B45309] font-black tracking-premium border border-[#FDE68A] bg-[#FFFBEB] px-3 py-1.5 rounded-full whitespace-nowrap shadow-sm">
-             VIP EXCLUSIVE
+             会员专享
           </span>
         </div>
       </div>
@@ -196,7 +196,7 @@ export const MenuView: React.FC<MenuProps> = ({
                              <span className="text-xl font-mono-numbers font-black text-gray-900">{product.price}</span>
                           </div>
                           <button onClick={(e) => handleDirectAdd(e, product)} className={`h-8 flex items-center justify-center transition-all active:scale-90 shadow-md ${product.specs ? 'bg-[#FDE047] px-4 rounded-xl' : 'w-8 h-8 bg-[#FDE047] rounded-xl'}`}>
-                             {product.specs ? <span className="text-[10px] font-black text-gray-900 tracking-premium">SELECT</span> : <Plus size={16} strokeWidth={3} className="text-gray-900" />}
+                             {product.specs ? <span className="text-[10px] font-black text-gray-900 tracking-premium">选规格</span> : <Plus size={16} strokeWidth={3} className="text-gray-900" />}
                           </button>
                        </div>
                     </div>
@@ -208,10 +208,10 @@ export const MenuView: React.FC<MenuProps> = ({
                     </div>
                     <div className="flex flex-col items-center">
                         <h4 className="font-brand-italic text-gray-900 text-lg mb-1 tracking-tight italic">
-                            {showFavoritesOnly ? 'No Favorites' : 'Nothing Found'}
+                            {showFavoritesOnly ? '暂无收藏' : '未找到商品'}
                         </h4>
                         <span className="text-[10px] font-black text-gray-400 tracking-premium text-center uppercase leading-loose">
-                            {showFavoritesOnly ? 'Save items for quick access' : 'Try a different category'}
+                            {showFavoritesOnly ? '收藏您喜欢的商品以便快速下单' : '尝试切换其他分类看看吧'}
                         </span>
                     </div>
                  </div>
@@ -235,7 +235,7 @@ export const MenuView: React.FC<MenuProps> = ({
                             <span className="text-xs font-black opacity-50">¥</span>
                             <span className="text-2xl font-mono-numbers font-black tracking-tighter">{cartTotal.toFixed(2)}</span>
                         </div>
-                     ) : <span className="text-xs font-black text-gray-500 tracking-premium">EMPTY CART</span>}
+                     ) : <span className="text-xs font-black text-gray-500 tracking-premium">购物车是空的</span>}
                   </div>
               </div>
               <button 
@@ -243,7 +243,7 @@ export const MenuView: React.FC<MenuProps> = ({
                 disabled={cart.length === 0} 
                 className={`px-10 h-11 rounded-[1.5rem] font-black text-xs tracking-premium transition-all active:scale-95 ${cart.length > 0 ? 'bg-[#FDE047] text-gray-900 shadow-xl shadow-yellow-500/20' : 'bg-gray-700 text-gray-500 cursor-not-allowed'}`}
               >
-                 CHECKOUT
+                 去结算
               </button>
            </div>
         </div>

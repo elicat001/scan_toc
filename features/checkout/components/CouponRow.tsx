@@ -17,7 +17,7 @@ export const CouponRow: React.FC<CouponRowProps> = ({ selectedCoupon, validCount
     >
       <div className="flex items-center gap-2">
         <Ticket size={16} className={selectedCoupon ? 'text-[#D97706]' : 'text-gray-400'} />
-        <span className="text-[10px] text-gray-400 font-black uppercase tracking-widest">Coupons</span>
+        <span className="text-[10px] text-gray-400 font-black uppercase tracking-widest">优惠券</span>
       </div>
 
       <div className="flex items-center text-xs font-black">
@@ -28,7 +28,7 @@ export const CouponRow: React.FC<CouponRowProps> = ({ selectedCoupon, validCount
           </div>
         ) : (
           <span className={`${validCount > 0 ? 'text-[#D97706]' : 'text-gray-400'}`}>
-            {validCount > 0 ? `${validCount} Available` : 'None'}
+            {validCount > 0 ? `${validCount} 张可用` : '无可用'}
           </span>
         )}
         <ChevronRight size={14} className="text-gray-300 ml-1 group-hover:translate-x-0.5 transition-transform" />

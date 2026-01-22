@@ -102,7 +102,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = (props) => {
            <div className="flex gap-3 items-center">
               <AlertCircle size={20} className="text-red-300" />
               <div className="flex-1">
-                 <h4 className="text-[10px] font-black italic tracking-tight uppercase">Payment Failed</h4>
+                 <h4 className="text-[10px] font-black italic tracking-tight uppercase">支付失败</h4>
                  <p className="text-[10px] font-bold text-red-100 opacity-80">{vm.payState.message}</p>
               </div>
            </div>

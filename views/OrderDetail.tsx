@@ -209,7 +209,7 @@ export const OrderDetailView: React.FC<OrderDetailProps> = ({ order: initialOrde
                 {order.status === OrderStatus.PENDING ? '待付款' : order.status}
               </h1>
               <div className="flex items-center gap-2 mt-1.5">
-                  <span className="text-[10px] opacity-60 font-bold uppercase tracking-wider">Order No.</span>
+                  <span className="text-[10px] opacity-60 font-bold uppercase tracking-wider">订单号.</span>
                   <span className="text-[10px] font-black font-mono">{order.id}</span>
                   <Copy size={10} className="opacity-40 hover:opacity-100 cursor-pointer" />
               </div>
@@ -218,7 +218,7 @@ export const OrderDetailView: React.FC<OrderDetailProps> = ({ order: initialOrde
             <div className={`transition-all duration-1000 ${showQueueNo ? 'scale-100 opacity-100' : 'scale-75 opacity-0'}`}>
               {order.queueNo && (
                 <div className="bg-white/20 backdrop-blur-xl px-5 py-2.5 rounded-[1.5rem] border border-white/20 shadow-lg text-center">
-                  <div className="text-[10px] uppercase font-black tracking-[0.2em] opacity-50 mb-0.5">Queue</div>
+                  <div className="text-[10px] uppercase font-black tracking-[0.2em] opacity-50 mb-0.5">取餐号</div>
                   <div className="text-3xl font-black font-mono tracking-tighter">{order.queueNo}</div>
                 </div>
               )}
@@ -231,7 +231,7 @@ export const OrderDetailView: React.FC<OrderDetailProps> = ({ order: initialOrde
             <div className="mt-8 flex items-center gap-3 bg-black/10 w-fit px-5 py-2.5 rounded-full border border-white/10 animate-pulse">
                <Timer size={18} />
                <div className="flex flex-col">
-                  <span className="text-[10px] font-black uppercase tracking-widest opacity-60">Payment Deadline</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest opacity-60">支付截止倒计时</span>
                   <span className="text-sm font-black font-mono tracking-wide">{formatTime(countdown)}</span>
                </div>
             </div>
@@ -265,7 +265,7 @@ export const OrderDetailView: React.FC<OrderDetailProps> = ({ order: initialOrde
                            <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: statusTheme.accent }}></div>
                            <h3 className="text-xl font-black text-gray-900 tracking-tight">{order.storeName}</h3>
                         </div>
-                        <p className="text-[10px] text-gray-400 font-bold ml-3.5 uppercase tracking-widest">High-End Bakery & Coffee</p>
+                        <p className="text-[10px] text-gray-400 font-bold ml-3.5 uppercase tracking-widest">精品烘焙与咖啡店</p>
                     </div>
                     <div className="flex gap-2">
                         <button className="w-9 h-9 rounded-full bg-gray-50 flex items-center justify-center text-gray-700 shadow-sm border border-gray-100 active:scale-90 transition-transform">
@@ -290,9 +290,9 @@ export const OrderDetailView: React.FC<OrderDetailProps> = ({ order: initialOrde
                                     <span className="font-bold text-sm text-gray-900">¥{item.price.toFixed(2)}</span>
                                 </div>
                                 <div className="flex justify-between items-center">
-                                    <span className="text-[10px] text-gray-400 font-black uppercase tracking-widest">{item.specSnapshot || 'Signature Blend'}</span>
+                                    <span className="text-[10px] text-gray-400 font-black uppercase tracking-widest">{item.specSnapshot || '标准规格'}</span>
                                     <div className="flex items-center gap-1.5">
-                                        <span className="text-[8px] font-black text-gray-300 uppercase">Qty</span>
+                                        <span className="text-[8px] font-black text-gray-300 uppercase">数量</span>
                                         <span className="text-sm font-black bg-gray-100 px-2 py-0.5 rounded-lg text-gray-900">x{item.count}</span>
                                     </div>
                                 </div>
@@ -311,16 +311,16 @@ export const OrderDetailView: React.FC<OrderDetailProps> = ({ order: initialOrde
 
                     <div className="space-y-3 mb-6">
                         <div className="flex justify-between text-xs text-gray-400 font-bold uppercase tracking-widest">
-                            <span>Subtotal</span>
+                            <span>小计金额</span>
                             <span>¥{order.totalAmount.toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between text-xs text-gray-400 font-bold uppercase tracking-widest">
-                            <span>Promotions</span>
+                            <span>优惠活动</span>
                             <span className="text-red-500">-¥{order.discountAmount.toFixed(2)}</span>
                         </div>
                         {order.type === 'Delivery' && (
                              <div className="flex justify-between text-xs text-gray-400 font-bold uppercase tracking-widest">
-                                <span>Delivery Fee</span>
+                                <span>配送费</span>
                                 <span>¥0.00</span>
                              </div>
                         )}
@@ -328,18 +328,18 @@ export const OrderDetailView: React.FC<OrderDetailProps> = ({ order: initialOrde
                     
                     <div className="flex justify-between items-end pt-4 border-t border-gray-200">
                         <div>
-                           <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-0.5">Total Paid</span>
+                           <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-0.5">实付合计</span>
                            <div className="flex items-baseline gap-1">
-                               <span className="text-xs font-black text-gray-900">CNY</span>
+                               <span className="text-xs font-black text-gray-900">人民币</span>
                                <span className="text-3xl font-black text-gray-900 tracking-tighter italic">¥{order.payAmount.toFixed(2)}</span>
                            </div>
                         </div>
                         <div className="flex flex-col items-end">
                             <div className="flex gap-1 mb-1">
                                 <div className="w-3 h-3 bg-[#FDE047] rounded-full flex items-center justify-center text-gray-900 text-[8px] font-black">章</div>
-                                <span className="text-[9px] font-black text-gray-900">+{Math.ceil(order.payAmount / 10)} Points</span>
+                                <span className="text-[9px] font-black text-gray-900">+{Math.ceil(order.payAmount / 10)} 积分</span>
                             </div>
-                            <span className="text-[8px] text-gray-400 font-bold uppercase tracking-[0.15em]">Transaction Verified</span>
+                            <span className="text-[8px] text-gray-400 font-bold uppercase tracking-[0.15em]">交易已核实</span>
                         </div>
                     </div>
                 </div>
@@ -356,26 +356,26 @@ export const OrderDetailView: React.FC<OrderDetailProps> = ({ order: initialOrde
             <div className="grid grid-cols-1 gap-4 mt-6">
                 <div className="bg-white rounded-3xl p-6 shadow-xl animate-in slide-in-from-bottom-10 duration-500 delay-200">
                     <h3 className="font-black text-[10px] uppercase tracking-[0.3em] text-gray-400 mb-6 flex items-center gap-2">
-                        <Coffee size={14} className="text-[#D97706]" /> Order Protocol
+                        <Coffee size={14} className="text-[#D97706]" /> 订单信息
                     </h3>
                     <div className="space-y-5">
                         <div className="flex justify-between items-center">
-                            <span className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Fulfillment</span>
+                            <span className="text-[10px] text-gray-500 font-black uppercase tracking-widest">履行方式</span>
                             <span className="text-xs text-gray-900 font-black">{order.type === 'Pick Up' ? '门店自取' : order.type === 'Dine In' ? '店内堂食' : order.type === 'Scan Order' ? '扫码堂食' : '外卖配送'}</span>
                         </div>
                         <div className="flex justify-between items-center">
-                            <span className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Merchant Phone</span>
+                            <span className="text-[10px] text-gray-500 font-black uppercase tracking-widest">商家电话</span>
                             <span className="text-xs text-gray-900 font-black">400-820-8820</span>
                         </div>
                         <div className="flex justify-between items-center group">
-                            <span className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Order Hash</span>
+                            <span className="text-[10px] text-gray-500 font-black uppercase tracking-widest">订单号</span>
                             <div className="flex items-center gap-2">
                                 <span className="text-xs font-mono text-gray-900 font-black tracking-tighter">{order.id}</span>
                                 <button className="text-gray-300 hover:text-gray-900 transition-colors"><Copy size={12}/></button>
                             </div>
                         </div>
                         <div className="flex justify-between items-center">
-                            <span className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Timestamp</span>
+                            <span className="text-[10px] text-gray-500 font-black uppercase tracking-widest">下单时间</span>
                             <span className="text-xs text-gray-900 font-black">{order.createTime}</span>
                         </div>
                     </div>

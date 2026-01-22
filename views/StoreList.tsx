@@ -69,10 +69,10 @@ export const StoreListView: React.FC<StoreListProps> = ({ onBack, onSelect }) =>
       <div className="flex-1 overflow-y-auto px-5 py-6 space-y-6">
          <div className="flex items-center justify-between px-1">
             <span className="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em]">
-                {searchTerm ? 'Search Results' : 'Nearby Stores'}
+                {searchTerm ? '搜索结果' : '附近门店'}
             </span>
             <span className="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em]">
-                Count: {filteredStores.length}
+                共 {filteredStores.length} 家
             </span>
          </div>
          
@@ -89,7 +89,7 @@ export const StoreListView: React.FC<StoreListProps> = ({ onBack, onSelect }) =>
                        <img src={store.image} className="w-full h-full object-cover grayscale-[0.2] group-hover:scale-110 transition-transform duration-700" alt={store.name} />
                        {store.status === 'CLOSED' && (
                            <div className="absolute inset-0 bg-black/60 flex items-center justify-center text-white text-[9px] font-black uppercase tracking-widest backdrop-blur-[1px]">
-                               Closed
+                               已闭店
                            </div>
                        )}
                     </div>
@@ -153,9 +153,9 @@ export const StoreListView: React.FC<StoreListProps> = ({ onBack, onSelect }) =>
                  <div className="w-24 h-24 bg-white rounded-[2.5rem] flex items-center justify-center mb-6 shadow-sm border border-gray-50">
                     <Search size={32} className="text-gray-100" />
                  </div>
-                 <h4 className="font-black text-gray-900 text-sm mb-1 uppercase tracking-widest italic">No Stores Found</h4>
+                 <h4 className="font-black text-gray-900 text-sm mb-1 uppercase tracking-widest italic">未找到门店</h4>
                  <p className="text-[10px] font-bold text-gray-400 text-center uppercase tracking-widest leading-loose">
-                    Try searching for a different location <br/> or adjust your search terms.
+                    尝试搜索其他位置或调整搜索词。
                  </p>
              </div>
          )}

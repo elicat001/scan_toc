@@ -130,7 +130,7 @@ export const StoreDetailView: React.FC<StoreDetailProps> = ({ onBack }) => {
                   <div className="flex-1">
                       <h3 className="font-black text-gray-900 text-sm uppercase tracking-widest mb-3">门店服务</h3>
                       <div className="flex gap-3 flex-wrap">
-                          {['免费WIFI', '可充电', '宝宝椅', '无烟区', '宠物友好'].map(tag => (
+                          {['免费 WIFI', '可充电', '提供宝宝椅', '无烟区', '宠物友好'].map(tag => (
                               <span key={tag} className="text-[11px] font-black bg-gray-50 text-gray-500 px-3 py-1.5 rounded-xl border border-gray-100 hover:bg-white hover:border-gray-200 transition-all cursor-default">
                                   {tag}
                               </span>
@@ -151,7 +151,7 @@ export const StoreDetailView: React.FC<StoreDetailProps> = ({ onBack }) => {
                   </div>
               </div>
               <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-[9px] font-black text-gray-500 shadow-sm border border-gray-100 uppercase tracking-widest">
-                View in Maps
+                在地图中查看
               </div>
           </div>
       </div>

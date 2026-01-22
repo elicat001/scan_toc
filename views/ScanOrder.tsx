@@ -65,7 +65,7 @@ export const ScanOrderView: React.FC<ScanOrderProps> = ({ onBack, onScanned }) =
                     <div className="bg-[#FDE047] p-4 rounded-full shadow-2xl">
                         <CheckCircle2 size={48} className="text-black" />
                     </div>
-                    <span className="mt-4 text-[#FDE047] font-bold text-lg">识别成功: A-08桌</span>
+                    <span className="mt-4 text-[#FDE047] font-bold text-lg">识别成功: A-08 桌</span>
                 </div>
               )}
           </div>

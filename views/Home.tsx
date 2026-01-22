@@ -49,7 +49,7 @@ export const HomeView: React.FC<HomeProps> = ({ onNavigate }) => {
                   <img src={user?.avatar} className="w-full h-full object-cover" alt="avatar" />
               </div>
               <div className="flex flex-col">
-                 <span className="text-[9px] text-gray-400 font-extrabold tracking-premium leading-none mb-1">Good Day</span>
+                 <span className="text-[9px] text-gray-400 font-extrabold tracking-premium leading-none mb-1">美好的一天</span>
                  <h1 className="text-lg font-black text-gray-900 leading-none">{user?.name}</h1>
               </div>
            </div>
@@ -73,7 +73,7 @@ export const HomeView: React.FC<HomeProps> = ({ onNavigate }) => {
              <img src={banners[0].imageUrl} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt={banners[0].title} />
              <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
              <div className="absolute bottom-4 left-5">
-                <span className="bg-yellow-400 text-gray-900 text-[8px] font-black px-2 py-0.5 rounded tracking-premium mb-1 inline-block">Special Offer</span>
+                <span className="bg-yellow-400 text-gray-900 text-[8px] font-black px-2 py-0.5 rounded tracking-premium mb-1 inline-block">今日特惠</span>
                 <h2 className="text-white font-brand-italic text-2xl tracking-tighter">{banners[0].title}</h2>
              </div>
           </div>
@@ -90,7 +90,7 @@ export const HomeView: React.FC<HomeProps> = ({ onNavigate }) => {
               </div>
               <div className="text-left">
                 <span className="block font-brand-italic text-3xl text-gray-900 tracking-tighter">扫码点餐</span>
-                <span className="block text-[9px] text-yellow-800 font-extrabold tracking-premium opacity-60">Instant table service</span>
+                <span className="block text-[9px] text-yellow-800 font-extrabold tracking-premium opacity-60">即刻开席</span>
               </div>
             </div>
             <div className="w-10 h-10 rounded-full bg-white/40 flex items-center justify-center">
@@ -129,13 +129,13 @@ export const HomeView: React.FC<HomeProps> = ({ onNavigate }) => {
                 </div>
              </div>
              <div className="absolute top-4 right-4 bg-white/80 backdrop-blur px-3 py-1 rounded-full text-[9px] font-black text-green-600 shadow-sm border border-green-100 tracking-premium">
-                Open Now
+                营业中
              </div>
           </div>
 
           <div className="px-6 pb-6 text-center">
              <h3 className="font-brand-italic text-2xl text-gray-900 tracking-tighter mb-1">{store.name}</h3>
-             <p className="text-[9px] text-gray-400 font-extrabold tracking-premium mb-5">Artisan Bakery & Coffee Roasters</p>
+             <p className="text-[9px] text-gray-400 font-extrabold tracking-premium mb-5">匠心烘焙与精品咖啡</p>
              
              <div className="flex gap-3">
                 <button className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl bg-gray-50 text-xs font-black text-gray-700 hover:bg-gray-100 active:scale-95 transition-all">
@@ -156,10 +156,10 @@ export const HomeView: React.FC<HomeProps> = ({ onNavigate }) => {
          <div className="flex items-center justify-between mb-5">
              <div>
                 <h3 className="font-brand-italic text-2xl text-gray-900 tracking-tighter leading-none mb-1">今日推荐</h3>
-                <span className="text-[9px] text-gray-400 font-extrabold tracking-premium">Selected for you</span>
+                <span className="text-[9px] text-gray-400 font-extrabold tracking-premium">为您精选</span>
              </div>
              <button className="text-[10px] font-extrabold text-gray-400 hover:text-gray-900 flex items-center gap-1 transition-colors tracking-premium">
-                View All <ChevronRight size={12} strokeWidth={3} />
+                查看全部 <ChevronRight size={12} strokeWidth={3} />
              </button>
          </div>
          

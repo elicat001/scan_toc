@@ -74,7 +74,7 @@ export const PointsMallView: React.FC<PointsMallProps> = ({ onBack, onHistory, o
                       <div className="h-32 bg-gray-100 relative">
                           <img src={item.image} className="w-full h-full object-cover" alt={item.name} />
                           <div className="absolute top-2 left-2 bg-black/50 backdrop-blur-sm text-white text-[9px] px-1.5 py-0.5 rounded">
-                              {item.type === 'COUPON' ? '虚拟券' : '实物'}
+                              {item.type === 'COUPON' ? '电子券' : '实物'}
                           </div>
                       </div>
                       <div className="p-3 flex flex-col flex-1">
@@ -93,4 +93,3 @@ export const PointsMallView: React.FC<PointsMallProps> = ({ onBack, onHistory, o
     </div>
   );
 };
-    

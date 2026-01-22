@@ -1,5 +1,6 @@
+
 import React, { useState } from 'react';
-import { Wallet, CheckCircle, Gift, Crown, Coffee, Percent } from 'lucide-react';
+import { Wallet, CheckCircle, Gift, Crown, Coffee, Percent, ShieldCheck, ChevronLeft } from 'lucide-react';
 import { Header } from '../components/Header';
 
 interface MemberTopUpProps {
@@ -23,125 +24,124 @@ const VIP_BENEFITS = [
 ];
 
 export const MemberTopUpView: React.FC<MemberTopUpProps> = ({ onBack }) => {
-  const [selectedAmount, setSelectedAmount] = useState<number | null>(200);
-  const [customAmount, setCustomAmount] = useState('');
+  const [selectedAmount, setSelectedAmount] = useState<number | null>(100);
   const [agreed, setAgreed] = useState(true);
 
-  const handlePresetSelect = (amount: number) => {
-      setSelectedAmount(amount);
-      setCustomAmount('');
-  };
-
-  const handleCustomChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const val = e.target.value;
-      if (/^\d*$/.test(val)) {
-          setCustomAmount(val);
-          setSelectedAmount(null);
-      }
-  };
-
-  const finalAmount = selectedAmount || (customAmount ? parseInt(customAmount) : 0);
-
   return (
-    <div className="min-h-screen bg-[#F3F4F6] flex flex-col">
-      <Header title="会员储值" onBack={onBack} theme="dark" />
+    <div className="h-full bg-white flex flex-col overflow-hidden">
+      {/* 沉浸式顶部 Header */}
+      <div className="bg-[#16181b] px-4 pt-4 pb-2 flex items-center justify-between text-white shrink-0">
+          <button onClick={onBack} className="p-2 -ml-2 hover:bg-white/10 rounded-full transition-colors">
+              <ChevronLeft size={24} />
+          </button>
+          <h2 className="font-black text-base italic tracking-tight">会员储值</h2>
+          <div className="w-10"></div>
+      </div>
 
-      <div className="flex-1 overflow-y-auto pb-safe">
-          {/* Balance Card */}
-          <div className="bg-[#1F2937] px-6 pb-16 pt-6 relative mb-12 rounded-b-[2rem] shadow-xl">
+      <div className="flex-1 overflow-y-auto no-scrollbar">
+          {/* 1. 余额区域 */}
+          <div className="bg-[#16181b] px-6 pt-4 pb-20 relative">
              <div className="flex justify-between items-start">
-                 <div>
-                    <div className="text-gray-400 text-xs mb-2 flex items-center gap-1"><Wallet size={12}/> 当前余额 (元)</div>
-                    <div className="text-5xl font-bold text-[#FDE047] font-mono tracking-tight">0.00</div>
+                 <div className="animate-in fade-in slide-in-from-left-4 duration-700">
+                    <div className="text-gray-500 text-[10px] mb-2 font-black flex items-center gap-1.5 uppercase tracking-widest">
+                      <Wallet size={12}/> 当前余额 (元)
+                    </div>
+                    <div className="text-7xl font-black text-[#fcd34d] font-mono-numbers tracking-tighter italic">0.00</div>
                  </div>
-                 <div className="bg-white/10 backdrop-blur-sm px-3 py-1 rounded-full text-[10px] text-gray-300 border border-white/10">
+                 <div className="bg-white/5 backdrop-blur-xl px-4 py-2 rounded-full text-[9px] text-gray-400 border border-white/10 font-black flex items-center gap-1.5 shadow-2xl">
+                     <ShieldCheck size={12} className="text-blue-500" />
                      资金安全保障中
                  </div>
              </div>
           </div>
 
-          {/* VIP Rights */}
-          <div className="mx-4 -mt-12 relative z-10 bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-5 text-[#FDE047] shadow-lg mb-6">
-             <div className="flex justify-between items-center mb-4 border-b border-white/10 pb-3">
-                 <h3 className="font-bold text-lg flex items-center gap-2"><Crown size={20} fill="currentColor" /> VIP会员权益</h3>
-                 <span className="text-xs bg-[#FDE047] text-gray-900 px-2 py-0.5 rounded font-bold">已解锁 0 项</span>
+          {/* 2. VIP 权益卡片 - 调整图标容器为圆形深色，对齐截图 */}
+          <div className="mx-4 -mt-12 relative z-10 bg-[#1c1e22] rounded-[2.5rem] p-7 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] border border-white/5">
+             <div className="flex justify-between items-center mb-8">
+                 <div className="flex items-center gap-2.5">
+                   <div className="w-10 h-10 bg-gradient-to-br from-[#fcd34d] to-[#fbbf24] rounded-full flex items-center justify-center text-gray-900 shadow-[0_0_20px_rgba(252,211,77,0.4)]">
+                     <Crown size={22} fill="currentColor" />
+                   </div>
+                   <h3 className="font-black text-[#fcd34d] text-xl italic tracking-tight">VIP会员权益</h3>
+                 </div>
+                 <div className="bg-[#fcd34d] text-gray-900 px-4 py-1.5 rounded-xl font-black italic text-[10px] shadow-lg">
+                   已解锁 0 项
+                 </div>
              </div>
-             <div className="grid grid-cols-4 gap-2">
+             
+             <div className="grid grid-cols-4 gap-4">
                  {VIP_BENEFITS.map((b, i) => (
-                     <div key={i} className="flex flex-col items-center text-center gap-2">
-                         <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center mb-1">
-                             <b.icon size={18} />
+                     <div key={i} className="flex flex-col items-center group active:scale-95 transition-transform">
+                         <div className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center mb-3 border border-white/5 shadow-inner">
+                             <b.icon size={22} className="text-[#fcd34d]/80" />
                          </div>
-                         <div className="text-xs font-bold">{b.title}</div>
-                         <div className="text-[9px] opacity-60 scale-90">{b.desc}</div>
+                         <div className="text-[11px] font-black text-white mb-1 whitespace-nowrap">{b.title}</div>
+                         <div className="text-[9px] text-gray-500 font-bold whitespace-nowrap">{b.desc}</div>
                      </div>
                  ))}
              </div>
           </div>
 
-          {/* Options Grid */}
-          <div className="px-4">
-             <h3 className="font-bold text-gray-900 mb-4 text-lg">充值金额</h3>
-             <div className="grid grid-cols-2 gap-4 mb-4">
-                 {TOPUP_OPTIONS.map((opt) => (
-                     <div 
-                        key={opt.amount}
-                        onClick={() => handlePresetSelect(opt.amount)}
-                        className={`relative p-4 rounded-xl border-2 cursor-pointer transition-all flex flex-col items-center justify-center h-24 ${selectedAmount === opt.amount ? 'border-[#FDE047] bg-[#FEFCE8] shadow-sm' : 'border-transparent bg-white shadow-sm'}`}
-                     >
-                         {opt.tag && (
-                             <div className="absolute -top-2 -right-2 bg-[#EF4444] text-white text-[10px] px-2 py-0.5 rounded-full font-bold shadow-sm z-10">
-                                 {opt.tag}
-                             </div>
-                         )}
-                         <div className="flex items-baseline gap-0.5">
-                             <span className="text-sm font-medium">¥</span>
-                             <span className="text-2xl font-bold text-gray-900">{opt.amount}</span>
-                         </div>
-                         {opt.bonus > 0 ? (
-                            <div className="text-xs text-[#CA8A04] mt-1 font-medium bg-[#FDE047]/20 px-2 py-0.5 rounded-full">送 {opt.bonus} 元</div>
-                         ) : (
-                            <div className="text-xs text-gray-300 mt-1">无赠送</div>
-                         )}
-                     </div>
-                 ))}
-             </div>
-             
-             {/* Custom Input */}
-             <div className={`bg-white rounded-xl p-4 flex items-center justify-between border-2 transition-colors mb-6 ${customAmount ? 'border-[#FDE047]' : 'border-transparent'}`}>
-                 <span className="font-bold text-gray-900">其他金额</span>
-                 <div className="flex items-center gap-2">
-                     <span className="text-gray-900 font-bold">¥</span>
-                     <input 
-                        type="text" 
-                        value={customAmount}
-                        onChange={handleCustomChange}
-                        placeholder="请输入金额"
-                        className="text-right w-32 outline-none text-lg font-bold text-gray-900 placeholder:text-gray-300"
-                     />
-                 </div>
-             </div>
+          {/* 3. 充值列表标题 */}
+          <div className="px-6 mt-12 mb-6">
+             <h3 className="font-black text-gray-900 text-2xl italic tracking-tight">充值金额</h3>
+          </div>
 
-             {/* Agreement */}
-             <div className="flex items-center gap-2 mb-8 px-2" onClick={() => setAgreed(!agreed)}>
-                 <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-colors flex-shrink-0 ${agreed ? 'bg-[#FDE047] border-[#FDE047]' : 'border-gray-300 bg-white'}`}>
-                     {agreed && <CheckCircle size={12} className="text-gray-900" />}
-                 </div>
-                 <span className="text-xs text-gray-500 leading-tight">
-                     我已阅读并同意 <span className="text-blue-600 font-medium">《会员储值协议》</span> 及 <span className="text-blue-600 font-medium">《隐私政策》</span>
-                 </span>
-             </div>
+          <div className="px-5 grid grid-cols-2 gap-5 mb-10">
+              {TOPUP_OPTIONS.map((opt) => (
+                  <div 
+                    key={opt.amount}
+                    onClick={() => setSelectedAmount(opt.amount)}
+                    className={`relative p-8 rounded-[2rem] border-2 transition-all duration-300 flex flex-col items-center justify-center min-h-[140px] active:scale-95 ${
+                      selectedAmount === opt.amount 
+                      ? 'border-[#fcd34d] bg-white shadow-[0_20px_40px_-15px_rgba(252,211,77,0.15)]' 
+                      : 'border-transparent bg-gray-50'
+                    }`}
+                  >
+                      {opt.tag && (
+                          <div className="absolute -top-2 -right-1 bg-[#ef4444] text-white text-[9px] px-3 py-1 rounded-xl font-black italic shadow-lg z-10">
+                              {opt.tag}
+                          </div>
+                      )}
+
+                      <div className="flex items-baseline gap-0.5">
+                          <span className="text-sm font-black text-gray-900">¥</span>
+                          <span className="text-4xl font-black text-gray-900 font-mono-numbers">{opt.amount}</span>
+                      </div>
+                      
+                      <div className={`text-[11px] mt-3 font-black tracking-tight ${opt.bonus > 0 ? 'text-[#d97706]' : 'text-gray-300'}`}>
+                        {opt.bonus > 0 ? `送 ${opt.bonus} 元` : '无赠送'}
+                      </div>
+                  </div>
+              ))}
+          </div>
+
+          {/* 4. 协议区域 - 增加底部外边距以避让按钮 */}
+          <div className="flex items-start gap-3 mt-4 px-10 pb-44" onClick={() => setAgreed(!agreed)}>
+              <div className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0 ${agreed ? 'bg-[#fcd34d] border-[#fcd34d]' : 'border-gray-200 bg-white'}`}>
+                  {agreed && <CheckCircle size={12} className="text-gray-900" strokeWidth={4} />}
+              </div>
+              <p className="text-[10px] text-gray-400 font-bold leading-relaxed">
+                  我已阅读并同意 <span className="text-blue-500 font-black">《会员储值协议》</span> 与 <span className="text-blue-500 font-black">《隐私政策》</span>。充值后金额将存入会员余额。
+              </p>
           </div>
       </div>
 
-      {/* Bottom Action */}
-      <div className="bg-white p-4 border-t border-gray-100 pb-safe">
+      {/* 5. 底部固定按钮 - 重构为胶囊内嵌设计 */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white/60 backdrop-blur-3xl p-6 border-t border-gray-100 pb-safe max-w-md mx-auto z-50">
           <button 
-            disabled={!finalAmount || !agreed}
-            className="w-full bg-[#FDE047] text-gray-900 font-bold py-3.5 rounded-full shadow-lg shadow-yellow-100 hover:bg-yellow-400 active:scale-[0.98] transition-all disabled:opacity-50 disabled:shadow-none disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            disabled={!selectedAmount || !agreed}
+            onClick={() => {/* 支付逻辑 */}}
+            className={`w-full h-14 rounded-full font-black text-sm tracking-widest transition-all flex items-center justify-between px-6 shadow-2xl active:scale-[0.98] ${
+              agreed ? 'bg-[#111827] text-[#fcd34d] shadow-gray-900/20' : 'bg-gray-100 text-gray-300 cursor-not-allowed'
+            }`}
           >
-              <span>立即充值</span>
-              {finalAmount > 0 && <span>¥{finalAmount}</span>}
+              <span className="text-base italic ml-2">立即充值</span>
+              {selectedAmount && (
+                <div className={`px-5 py-1.5 rounded-full text-sm font-mono-numbers flex items-center gap-1 ${agreed ? 'bg-white/10' : 'bg-gray-200'}`}>
+                  ¥{selectedAmount.toFixed(2)}
+                </div>
+              )}
           </button>
       </div>
     </div>

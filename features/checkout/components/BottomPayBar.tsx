@@ -13,7 +13,7 @@ export const BottomPayBar: React.FC<BottomPayBarProps> = ({ payable, processing,
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-white p-5 border-t border-gray-100 flex items-center justify-between pb-safe max-w-md mx-auto z-50">
       <div>
-        <span className="text-[9px] text-gray-400 font-black uppercase tracking-widest block mb-0.5">Grand Total</span>
+        <span className="text-[9px] text-gray-400 font-black uppercase tracking-widest block mb-0.5">应付金额</span>
         <div className="text-2xl font-black text-gray-900 italic tracking-tighter">¥{payable.toFixed(2)}</div>
       </div>
       
@@ -25,7 +25,7 @@ export const BottomPayBar: React.FC<BottomPayBarProps> = ({ payable, processing,
         }`}
       >
         {processing && <Loader2 className="animate-spin" size={16} />}
-        {statusText || 'CONFIRM PAY'}
+        {statusText === 'PREPARING...' ? '订单创建中...' : statusText === 'PAYING...' ? '支付中...' : '立即下单'}
       </button>
     </div>
   );
