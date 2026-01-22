@@ -127,13 +127,13 @@ export const MenuView: React.FC<MenuProps> = ({
              我的收藏
           </button>
           <div className="w-[1px] h-3 bg-gray-200 mx-1"></div>
-          <span className="text-[9px] text-[#B45309] font-black tracking-premium border border-[#FDE68A] bg-[#FFFBEB] px-3 py-1.5 rounded-full whitespace-nowrap shadow-sm">
+          <span className="text-[9px] text-[#B45309] font-black tracking-premium border border-[#FDE047] bg-[#FFFBEB] px-3 py-1.5 rounded-full whitespace-nowrap shadow-sm">
              会员专享
           </span>
         </div>
       </div>
 
-      <div className="flex flex-1 overflow-hidden relative">
+      <div className="flex-1 overflow-hidden relative">
         <div className="w-[26%] bg-gray-50 h-full overflow-y-auto pb-24 no-scrollbar border-r border-gray-100">
           {categories.map((cat) => (
             <div
@@ -221,27 +221,27 @@ export const MenuView: React.FC<MenuProps> = ({
         </div>
         
         <div className="absolute bottom-20 left-4 right-4 z-50 animate-in slide-in-from-bottom-6 duration-700">
-           <div className={`rounded-[2rem] p-2.5 pr-3 shadow-2xl flex items-center justify-between h-16 transition-all duration-500 ${cart.length > 0 ? 'bg-gray-900 translate-y-0' : 'bg-gray-800/80 backdrop-blur-md translate-y-2 opacity-50'}`}>
-              <div className="flex items-center gap-4 flex-1 cursor-pointer pl-2" onClick={cart.length > 0 ? onCheckout : undefined}>
+           <div className={`rounded-[2.5rem] p-2.5 pr-4 shadow-2xl flex items-center justify-between h-20 transition-all duration-500 ${cart.length > 0 ? 'bg-gray-900 translate-y-0' : 'bg-gray-800/80 backdrop-blur-md translate-y-2 opacity-50'}`}>
+              <div className="flex items-center gap-4 flex-1 cursor-pointer pl-4" onClick={cart.length > 0 ? onCheckout : undefined}>
                   <div className="relative">
-                      <div className={`w-11 h-11 rounded-full flex items-center justify-center border-4 shadow-xl z-10 transition-colors ${cart.length > 0 ? 'bg-gray-800 border-gray-700' : 'bg-gray-700 border-gray-600'}`}>
-                         <ShoppingCart size={20} className={cart.length > 0 ? "text-[#FDE047]" : "text-gray-500"} />
+                      <div className={`w-12 h-12 rounded-full flex items-center justify-center border-4 shadow-xl z-10 transition-colors ${cart.length > 0 ? 'bg-gray-800 border-gray-700' : 'bg-gray-700 border-gray-600'}`}>
+                         <ShoppingCart size={22} className={cart.length > 0 ? "text-[#FDE047]" : "text-gray-500"} />
                       </div>
-                      {cartCount > 0 && <div className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-gray-900 z-20 shadow-lg">{cartCount}</div>}
+                      {cartCount > 0 && <div className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] font-black w-6 h-6 rounded-full flex items-center justify-center border-2 border-gray-900 z-20 shadow-lg">{cartCount}</div>}
                   </div>
                   <div className="flex flex-col">
                      {cart.length > 0 ? (
                         <div className="flex items-baseline gap-1 text-white">
-                            <span className="text-xs font-black opacity-50">¥</span>
-                            <span className="text-2xl font-mono-numbers font-black tracking-tighter">{cartTotal.toFixed(2)}</span>
+                            <span className="text-xs font-black opacity-50 uppercase italic mr-0.5">Total</span>
+                            <span className="text-2xl font-mono-numbers font-black tracking-tighter italic">¥{cartTotal.toFixed(2)}</span>
                         </div>
-                     ) : <span className="text-xs font-black text-gray-500 tracking-premium">购物车是空的</span>}
+                     ) : <span className="text-xs font-black text-gray-500 tracking-[0.1em] uppercase">购物车是空的</span>}
                   </div>
               </div>
               <button 
                 onClick={onCheckout} 
                 disabled={cart.length === 0} 
-                className={`px-10 h-11 rounded-[1.5rem] font-black text-xs tracking-premium transition-all active:scale-95 ${cart.length > 0 ? 'bg-[#FDE047] text-gray-900 shadow-xl shadow-yellow-500/20' : 'bg-gray-700 text-gray-500 cursor-not-allowed'}`}
+                className={`px-10 h-14 rounded-full font-black text-sm tracking-[0.1em] uppercase italic transition-all active:scale-95 ${cart.length > 0 ? 'bg-[#FDE047] text-gray-900 shadow-xl shadow-yellow-500/20' : 'bg-gray-700 text-gray-500 cursor-not-allowed'}`}
               >
                  去结算
               </button>

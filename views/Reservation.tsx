@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Calendar, Clock, Users, Phone } from 'lucide-react';
 import { Header } from '../components/Header';
@@ -87,7 +88,7 @@ export const ReservationView: React.FC<ReservationProps> = ({ onBack }) => {
 
                  <button 
                     type="submit"
-                    className="w-full bg-[#FDE047] text-gray-900 font-bold py-3.5 rounded-xl shadow-md hover:bg-yellow-400 transition-colors mt-4"
+                    className="w-full h-15 bg-[#FDE047] text-gray-900 font-black rounded-2xl shadow-xl shadow-yellow-200/50 hover:bg-yellow-400 transition-all active:scale-95 mt-4 flex items-center justify-center text-base italic"
                  >
                     立即预约
                  </button>
@@ -100,10 +101,9 @@ export const ReservationView: React.FC<ReservationProps> = ({ onBack }) => {
          </div>
       </div>
       
-      {/* Success Toast */}
       {showSuccess && (
           <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
-              <div className="bg-black/80 text-white px-6 py-3 rounded-full shadow-lg font-medium animate-in fade-in zoom-in duration-200">
+              <div className="bg-black/80 text-white px-8 py-4 rounded-full shadow-2xl font-black italic animate-in fade-in zoom-in duration-200">
                   预约提交成功
               </div>
           </div>
