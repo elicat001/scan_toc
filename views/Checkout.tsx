@@ -50,10 +50,12 @@ export const CheckoutView: React.FC<CheckoutProps> = ({
         setCoupons(couponData);
         
         // 自动选择最优券逻辑
-        const cartTotal = cart.reduce((s, i) => s + i.price * i.quantity, 0);
-        const valid = couponData.filter(c => c.minSpend <= cartTotal);
+        // Fix: Use priceCent and minSpendCent
+        const cartTotal = cart.reduce((s, i) => s + (i.priceCent / 100) * i.quantity, 0);
+        const valid = couponData.filter(c => (c.minSpendCent / 100) <= cartTotal);
         if (valid.length > 0) {
-          setSelectedCoupon(valid.sort((a, b) => b.amount - a.amount)[0]);
+          // Fix: Use amountCent
+          setSelectedCoupon(valid.sort((a, b) => b.amountCent - a.amountCent)[0]);
         }
       } catch (err) {
         showToast('获取用户信息失败', 'error');
@@ -64,8 +66,9 @@ export const CheckoutView: React.FC<CheckoutProps> = ({
 
   // --- 价格计算逻辑 ---
   const prices = useMemo(() => {
-    const rawTotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    const discount = selectedCoupon ? selectedCoupon.amount : 0;
+    // Fix: Use priceCent and amountCent
+    const rawTotal = cart.reduce((sum, item) => sum + (item.priceCent / 100) * item.quantity, 0);
+    const discount = selectedCoupon ? (selectedCoupon.amountCent / 100) : 0;
     const delivery = diningMode === 'delivery' ? 5 : 0;
     const final = Math.max(0, rawTotal - discount + delivery);
     return { rawTotal, discount, delivery, final };
@@ -80,18 +83,19 @@ export const CheckoutView: React.FC<CheckoutProps> = ({
     
     try {
       // 阶段 1: 创建订单
-      // Fix: map diningMode to OrderType and map cart items to match the expected DTO structure
-      const orderType: OrderType = tableNo ? 'Scan Order' : 
-        diningMode === 'dine-in' ? 'Dine In' :
-        diningMode === 'pickup' ? 'Pick Up' :
-        'Delivery';
+      // Fix: map diningMode to correct OrderType enum values
+      const orderType: OrderType = tableNo ? 'SCAN_ORDER' : 
+        diningMode === 'dine-in' ? 'DINE_IN' :
+        diningMode === 'pickup' ? 'PICKUP' :
+        'DELIVERY';
 
       const { success, orderId } = await api.createOrder({ 
         storeId: 1, 
         items: cart.map(item => ({
           productId: item.id,
           name: item.name,
-          price: item.price,
+          // Fix: Use priceCent
+          priceCent: item.priceCent,
           count: item.quantity,
           specSnapshot: item.selectedSpec ? JSON.stringify(item.selectedSpec) : undefined
         })), 
@@ -165,7 +169,8 @@ export const CheckoutView: React.FC<CheckoutProps> = ({
                     <div className="flex-1 min-w-0">
                         <div className="flex justify-between">
                             <h4 className="font-bold text-sm text-gray-900 truncate">{item.name}</h4>
-                            <span className="font-bold text-sm">¥{item.price.toFixed(2)}</span>
+                            {/* Fix: Use priceCent */}
+                            <span className="font-bold text-sm">¥{(item.priceCent / 100).toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between items-center mt-1">
                             <span className="text-[10px] text-gray-400">默认规格</span>
@@ -180,7 +185,8 @@ export const CheckoutView: React.FC<CheckoutProps> = ({
               <div className="flex justify-between text-sm" onClick={() => setShowCouponModal(true)}>
                   <span className="text-gray-500 flex items-center gap-1"><Ticket size={14} /> 优惠券</span>
                   <span className="text-[#D97706] font-bold">
-                    {selectedCoupon ? `-¥${selectedCoupon.amount}` : (coupons.length > 0 ? `${coupons.length}张可用` : '无可用')}
+                    {/* Fix: Use amountCent and minSpendCent */}
+                    {selectedCoupon ? `-¥${selectedCoupon.amountCent / 100}` : (coupons.length > 0 ? `${coupons.length}张可用` : '无可用')}
                     <ChevronRight size={14} className="inline ml-1" />
                   </span>
               </div>
@@ -197,7 +203,8 @@ export const CheckoutView: React.FC<CheckoutProps> = ({
            <div className="space-y-1">
               {[
                 { id: 'wechat', label: '微信支付', icon: '🟢' },
-                { id: 'balance', label: '余额支付', icon: '💰', sub: `余额: ¥${user?.balance.toFixed(2) || 0}` }
+                // Fix: Use balanceCent
+                { id: 'balance', label: '余额支付', icon: '💰', sub: `余额: ¥${((user?.balanceCent || 0) / 100).toFixed(2)}` }
               ].map(m => (
                 <div 
                   key={m.id}
